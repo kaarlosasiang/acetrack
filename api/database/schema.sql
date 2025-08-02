@@ -306,10 +306,18 @@ CREATE TABLE activity_logs (
 -- Insert default system roles for school organizations
 INSERT INTO roles (organization_id, name, description, is_system, permissions) VALUES
 (NULL, 'super_admin', 'System Super Administrator', TRUE, '["*"]'),
-(NULL, 'org_admin', 'Organization Administrator', TRUE, '["students.*", "teachers.*", "sections.*", "attendance.*", "reports.*", "payments.*"]'),
-(NULL, 'teacher', 'Teacher/Faculty', TRUE, '["students.read", "attendance.*", "sections.assigned", "reports.section"]'),
-(NULL, 'staff', 'Administrative Staff', TRUE, '["students.read", "attendance.read", "reports.read"]'),
-(NULL, 'student', 'Student', TRUE, '["attendance.own", "profile.*"]');
+
+-- Organization-specific roles for student organizations
+(1, 'adviser', 'Organization Adviser - Faculty mentor with full oversight', TRUE, '["users.*", "attendance.*", "events.*", "reports.*", "roles.read", "payments.read", "organization.update"]'),
+(1, 'co_adviser', 'Organization Co-Adviser - Assistant faculty mentor', TRUE, '["users.read", "users.update", "attendance.*", "events.*", "reports.read"]'),
+(1, 'governor', 'Governor - Highest student leadership position', TRUE, '["users.*", "attendance.*", "events.*", "reports.*", "roles.read", "payments.create", "payments.update"]'),
+(1, 'vice_governor', 'Vice Governor - Second highest student leadership', TRUE, '["users.read", "users.update", "attendance.*", "events.*", "reports.*"]'),
+(1, 'secretary', 'Secretary - Records and documentation management', TRUE, '["users.read", "attendance.read", "attendance.create", "events.*", "reports.create"]'),
+(1, 'treasurer', 'Treasurer - Financial management', TRUE, '["users.read", "payments.*", "reports.financial", "events.read"]'),
+(1, 'auditor', 'Auditor - Financial oversight and compliance', TRUE, '["users.read", "payments.read", "reports.*", "attendance.read"]'),
+(1, 'business_manager', 'Business Manager - External relations and partnerships', TRUE, '["users.read", "events.*", "payments.read", "reports.read"]'),
+(1, 'pio', 'Public Information Officer - Communications and media', TRUE, '["users.read", "events.*", "reports.read"]'),
+(1, 'student', 'Student Member - Basic member access', TRUE, '["attendance.own", "events.register", "profile.*"]');
 
 -- Insert default organizations
 INSERT INTO organizations (name, abbreviation, description, contact_email, status, is_owner) VALUES

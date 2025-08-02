@@ -48,7 +48,7 @@ class Event extends Model {
             }
         }
         
-        return $this->db->fetchAll($sql, $params);
+return $this->db->fetchAll($sql, $params);
     }
     
     public function getUpcomingEvents($organizationId, $limit = 10) {

@@ -3,7 +3,7 @@ class Attendance extends Model {
     protected $table = 'attendance';
     protected $fillable = [
         'user_id', 'tenant_id', 'check_in', 'check_out', 'break_start', 
-        'break_end', 'total_hours', 'status', 'notes', 'location', 'ip_address'
+ 'break_end', 'total_hours', 'status', 'notes', 'location', 'ip_address'
     ];
     
     public function checkIn($userId, $tenantId, $location = null, $notes = null) {
@@ -162,7 +162,7 @@ class Attendance extends Model {
     
     public function getAttendanceReport($tenantId, $startDate = null, $endDate = null, $departmentId = null) {
         $sql = "SELECT a.*, u.first_name, u.last_name, u.employee_id, u.department_id, d.name as department_name
-                FROM attendance a 
+FROM attendance a
                 INNER JOIN users u ON a.user_id = u.id 
                 LEFT JOIN departments d ON u.department_id = d.id
                 WHERE a.tenant_id = :tenant_id";

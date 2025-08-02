@@ -41,27 +41,15 @@ Defines academic programs offered.
   - `code`: String, Program code
   - `description`: Text, Program description
 
-### 4. Sections
-Describes class sections.
-- **Fields:**
-  - `id`: Integer, Primary Key, Auto Increment
-  - `organization_id`: Integer, Foreign Key to `organizations(id)`
-  - `academic_year_id`: Integer, Foreign Key to `academic_years(id)`
-  - `program_id`: Integer, Foreign Key to `programs(id)`
-  - `year_level`: Integer, Year level of the section
-  - `section_name`: String, Name of the section
-
-### 5. Subscription Payments
+### 4. Subscription Payments
 Records payments made for subscriptions.
 - **Fields:**
   - `id`: Integer, Primary Key, Auto Increment
   - `organization_id`: Integer, Foreign Key to `organizations(id)`
   - `amount`: Decimal, Payment amount
-  - `currency`: String, Payment currency
   - `payment_method`: Enum('cash', 'check', 'bank_transfer', 'other')
   - `payment_date`: Date, Date of payment
   - `receipt_image`: String, Path to receipt image
-
 ### 6. Event Types
 Categorizes types of events.
 - **Fields:**

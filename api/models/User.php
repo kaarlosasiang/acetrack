@@ -3,7 +3,7 @@ class User extends Model {
     protected $table = 'users';
     protected $fillable = [
         'tenant_id', 'first_name', 'last_name', 'email', 'password', 
-        'phone', 'employee_id', 'department_id', 'position', 'hire_date',
+ 'phone', 'employee_id', 'department_id', 
         'status', 'avatar'
     ];
     protected $hidden = ['password'];
@@ -17,7 +17,7 @@ class User extends Model {
         return parent::create($data, $tenantId);
     }
     
-    public function update($id, $data, $tenantId = null) {
+   public function update($id, $data, $tenantId = null) {
         if (isset($data['password'])) {
             $auth = new Auth();
             $data['password'] = $auth->hashPassword($data['password']);
