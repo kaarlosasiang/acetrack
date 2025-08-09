@@ -1,5 +1,5 @@
 <?php
-class TenantMiddleware implements Middleware {
+class OrganizationMiddleware implements Middleware {
     public function handle($params = []) {
         $headers = getallheaders();
         $organizationId = $headers['X-Organization-ID'] ?? null;
@@ -52,4 +52,3 @@ class TenantMiddleware implements Middleware {
         }
     }
 }
-

@@ -6,7 +6,7 @@ class Router {
     public function __construct() {
         $this->middlewares = [
             'auth' => new AuthMiddleware(),
-            'tenant' => new TenantMiddleware(),
+            'organization' => new OrganizationMiddleware(),
             'rbac' => new RBACMiddleware()
         ];
     }

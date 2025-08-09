@@ -17,7 +17,7 @@ class AuthMiddleware implements Middleware {
         
         // Store user in session for easy access
         $_SESSION['user'] = $user;
-        $_SESSION['tenant_id'] = $user['tenant_id'];
+        $_SESSION['organization_id'] = $user['organization_id'];
     }
 }
 

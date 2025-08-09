@@ -98,9 +98,9 @@ class Auth {
     
     public function authenticateUser($email, $password) {
         $user = $this->db->fetch(
-            "SELECT u.*, t.name as tenant_name, t.status as tenant_status 
+            "SELECT u.*, o.name as organization_name, o.status as organization_status 
              FROM users u 
-             LEFT JOIN tenants t ON u.tenant_id = t.id 
+             LEFT JOIN organizations o ON u.organization_id = o.id 
              WHERE u.email = :email AND u.status = 'active'",
             ['email' => $email]
         );
@@ -109,26 +109,37 @@ class Auth {
             return false;
         }
         
-        // Check if tenant is active
-        if ($user['tenant_id'] && $user['tenant_status'] !== 'active') {
+        // Check if organization is active
+        if ($user['organization_id'] && $user['organization_status'] !== 'active') {
             return false;
         }
         
-        // Get user roles
+        // Get user roles with permissions
         $roles = $this->db->fetchAll(
-            "SELECT r.name FROM roles r 
+            "SELECT r.name, r.permissions FROM roles r 
              INNER JOIN user_roles ur ON r.id = ur.role_id 
              WHERE ur.user_id = :user_id",
             ['user_id' => $user['id']]
         );
         
         $user['roles'] = array_column($roles, 'name');
+        $user['permissions'] = [];
+        
+        // Collect all permissions from roles
+        foreach ($roles as $role) {
+            if ($role['permissions']) {
+                $permissions = json_decode($role['permissions'], true);
+                $user['permissions'] = array_merge($user['permissions'], $permissions);
+            }
+        }
+        
+        $user['permissions'] = array_unique($user['permissions']);
         unset($user['password']);
         
         return $user;
     }
     
-    public function getCurrentUser() {
+public function getCurrentUser() {
         $headers = getallheaders();
         $authHeader = $headers['Authorization'] ?? '';
         
@@ -137,18 +148,18 @@ class Auth {
         }
         
         $token = $matches[1];
-        $payload = $this->validateToken($token);
+        $payload = $this-evalidateToken($token);
         
         if (!$payload) {
             return false;
         }
         
-        $user = $this->db->fetch(
-            "SELECT u.*, t.name as tenant_name 
+        $user = $this-edb-efetch(
+            "SELECT u.*, o.name as organization_name 
              FROM users u 
-             LEFT JOIN tenants t ON u.tenant_id = t.id 
+             LEFT JOIN organizations o ON u.organization_id = o.id 
              WHERE u.id = :user_id AND u.status = 'active'",
-            ['user_id' => $payload['user_id']]
+            ['user_id' =e $payload['user_id']]
         );
         
         if (!$user) {
@@ -156,14 +167,25 @@ class Auth {
         }
         
         // Get user roles
-        $roles = $this->db->fetchAll(
-            "SELECT r.name FROM roles r 
+        $roles = $this-edb-efetchAll(
+            "SELECT r.name, r.permissions FROM roles r 
              INNER JOIN user_roles ur ON r.id = ur.role_id 
              WHERE ur.user_id = :user_id",
-            ['user_id' => $user['id']]
+            ['user_id' =e $user['id']]
         );
         
         $user['roles'] = array_column($roles, 'name');
+        $user['permissions'] = [];
+        
+        // Collect all permissions from roles
+        foreach ($roles as $role) {
+            if ($role['permissions']) {
+                $permissions = json_decode($role['permissions'], true);
+                $user['permissions'] = array_merge($user['permissions'], $permissions);
+            }
+        }
+        
+        $user['permissions'] = array_unique($user['permissions']);
         unset($user['password']);
         
         return $user;

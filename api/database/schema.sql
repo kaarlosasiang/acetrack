@@ -1,341 +1,390 @@
--- School Organization Attendance API Database Schema
+-- Multi-Organization Student Attendance Tracking System - MySQL Schema
+-- This schema replaces the existing structure with simplified, focused entities
 
--- Student Organizations table
+SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS scan_logs;
+DROP TABLE IF EXISTS notifications;
+DROP TABLE IF EXISTS password_resets;
+DROP TABLE IF EXISTS attendance;
+DROP TABLE IF EXISTS events;
+DROP TABLE IF EXISTS user_roles;
+DROP TABLE IF EXISTS roles;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS organizations;
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- Organizations table (simplified multi-tenant structure)
 CREATE TABLE organizations (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     abbreviation VARCHAR(10),
-    description TEXT,
     contact_email VARCHAR(255),
     contact_phone VARCHAR(20),
-    status ENUM('active', 'inactive', 'suspended', 'expired') DEFAULT 'active',
+    logo VARCHAR(255), -- Logo file path
+    
+    -- Subscription management
+    is_default_tenant BOOLEAN DEFAULT FALSE, -- For ACES organization
     subscription_start DATE,
     subscription_end DATE,
-    is_owner BOOLEAN DEFAULT FALSE, -- For ACES organization
-    logo VARCHAR(255), -- Logo file path
-    banner VARCHAR(255), -- Banner file path
-    settings JSON,
+    status ENUM('active', 'inactive', 'expired') DEFAULT 'active',
+    
+    -- Metadata
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    -- Indexes
     INDEX idx_name (name),
     INDEX idx_status (status),
     INDEX idx_subscription (subscription_end),
-    INDEX idx_is_owner (is_owner)
+    INDEX idx_default_tenant (is_default_tenant)
 );
 
--- Academic Years table
-CREATE TABLE academic_years (
+-- Roles table (simplified role structure per organization)
+CREATE TABLE roles (
     id INT AUTO_INCREMENT PRIMARY KEY,
     organization_id INT NOT NULL,
-    name VARCHAR(100) NOT NULL, -- e.g., "2023-2024"
-    start_date DATE NOT NULL,
-    end_date DATE NOT NULL,
-    is_current BOOLEAN DEFAULT FALSE,
-    status ENUM('active', 'inactive') DEFAULT 'active',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
-    INDEX idx_organization (organization_id),
-    INDEX idx_current (is_current),
-    INDEX idx_dates (start_date, end_date)
-);
-
--- Academic Programs/Courses table
-CREATE TABLE programs (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    organization_id INT NOT NULL,
-    name VARCHAR(255) NOT NULL, -- e.g., "Computer Science", "Business Administration"
-    code VARCHAR(20), -- e.g., "CS", "BA"
+    name ENUM('super_admin', 'org_admin', 'staff', 'viewer', 'student') NOT NULL,
     description TEXT,
-    duration_years INT DEFAULT 4,
-    status ENUM('active', 'inactive') DEFAULT 'active',
+    
+    -- Permissions as JSON for flexibility
+    permissions JSON,
+    
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
     FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
-    INDEX idx_organization (organization_id),
-    INDEX idx_code (code)
+    UNIQUE KEY unique_role_per_org (organization_id, name),
+    INDEX idx_organization (organization_id)
 );
 
--- Class Sections table
-CREATE TABLE sections (
+-- Users table (students and staff)
+CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     organization_id INT NOT NULL,
-    academic_year_id INT NOT NULL,
-    program_id INT NOT NULL,
-    year_level INT NOT NULL, -- 1st year, 2nd year, etc.
-    section_name VARCHAR(50) NOT NULL, -- A, B, C, etc.
-    capacity INT DEFAULT 50,
-    adviser_id INT, -- Teacher/Faculty member
-    status ENUM('active', 'inactive') DEFAULT 'active',
+    
+    -- Basic info
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    middle_name VARCHAR(100),
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    phone VARCHAR(20),
+    
+    -- Student-specific fields
+    student_id VARCHAR(50), -- Student ID number
+    course VARCHAR(100), -- Course/Program name
+    year_level INT, -- 1, 2, 3, 4, etc.
+    
+    -- Status and approval
+    user_type ENUM('student', 'staff') DEFAULT 'student',
+    status ENUM('pending', 'active', 'inactive', 'suspended') DEFAULT 'pending',
+    approved_by INT, -- ID of org admin who approved
+    approved_at TIMESTAMP NULL,
+    
+    -- QR Code for attendance
+    qr_code_static VARCHAR(255) UNIQUE, -- Static QR code identifier
+    qr_last_generated TIMESTAMP NULL, -- For dynamic QR tracking
+    
+    -- Profile
+    avatar VARCHAR(255),
+    birth_date DATE,
+    address TEXT,
+    emergency_contact_name VARCHAR(255),
+    emergency_contact_phone VARCHAR(20),
+    
+    -- Metadata
+    last_login TIMESTAMP NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
     FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
-    FOREIGN KEY (academic_year_id) REFERENCES academic_years(id) ON DELETE CASCADE,
-    FOREIGN KEY (program_id) REFERENCES programs(id) ON DELETE CASCADE,
-    UNIQUE KEY unique_section (organization_id, academic_year_id, program_id, year_level, section_name),
+    FOREIGN KEY (approved_by) REFERENCES users(id) ON DELETE SET NULL,
+    
+    -- Indexes
     INDEX idx_organization (organization_id),
-    INDEX idx_academic_year (academic_year_id),
-    INDEX idx_program (program_id)
+    INDEX idx_email (email),
+    INDEX idx_student_id (student_id),
+    INDEX idx_status (status),
+    INDEX idx_user_type (user_type),
+    INDEX idx_qr_code (qr_code_static),
+    INDEX idx_course_year (course, year_level)
 );
 
--- Subscription Payments table
-CREATE TABLE subscription_payments (
+-- User roles assignment
+CREATE TABLE user_roles (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    organization_id INT NOT NULL,
-    amount DECIMAL(10,2) NOT NULL,
-    currency VARCHAR(3) DEFAULT 'USD',
-    payment_method ENUM('cash', 'check', 'bank_transfer', 'other') NOT NULL,
-    payment_date DATE NOT NULL,
-    subscription_start DATE NOT NULL,
-    subscription_end DATE NOT NULL,
-    receipt_number VARCHAR(100),
-    receipt_image VARCHAR(255), -- Receipt image file path
-    notes TEXT,
-    processed_by INT, -- Admin who processed the payment
-    status ENUM('pending', 'confirmed', 'cancelled') DEFAULT 'confirmed',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
-    INDEX idx_organization (organization_id),
-    INDEX idx_payment_date (payment_date),
-    INDEX idx_subscription_period (subscription_start, subscription_end)
-);
-
--- Event Types table
-CREATE TABLE event_types (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    organization_id INT NOT NULL,
-    name VARCHAR(255) NOT NULL, -- e.g., "General Meeting", "Workshop", "Social Event"
-    description TEXT,
-    color VARCHAR(7), -- Hex color for UI (e.g., #FF5733)
-    default_duration_minutes INT DEFAULT 120, -- Default event duration
-    requires_attendance BOOLEAN DEFAULT TRUE,
-    status ENUM('active', 'inactive') DEFAULT 'active',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
-    UNIQUE KEY unique_event_type_name (organization_id, name),
-    INDEX idx_organization (organization_id),
-    INDEX idx_status (status)
+    user_id INT NOT NULL,
+    role_id INT NOT NULL,
+    assigned_by INT,
+    assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE,
+    FOREIGN KEY (assigned_by) REFERENCES users(id) ON DELETE SET NULL,
+    
+    UNIQUE KEY unique_user_role (user_id, role_id),
+    INDEX idx_user (user_id),
+    INDEX idx_role (role_id)
 );
 
 -- Events table
 CREATE TABLE events (
     id INT AUTO_INCREMENT PRIMARY KEY,
     organization_id INT NOT NULL,
-    event_type_id INT NOT NULL,
+    
+    -- Event details
     title VARCHAR(255) NOT NULL,
     description TEXT,
-    about TEXT, -- About this event section
+    about TEXT, -- Detailed about section
     location VARCHAR(255),
+    banner VARCHAR(255), -- Event banner image
+    
+    -- Event timing
     start_datetime DATETIME NOT NULL,
     end_datetime DATETIME NOT NULL,
-    max_attendees INT,
-    registration_required BOOLEAN DEFAULT FALSE,
-    registration_deadline DATETIME,
-    created_by INT NOT NULL, -- User who created the event
-    status ENUM('draft', 'published', 'ongoing', 'completed', 'cancelled') DEFAULT 'draft',
-    banner VARCHAR(255), -- Event banner image
-    speakers JSON, -- Array of speakers with details
+    
+    -- Event metadata
+    speakers JSON, -- Array of speaker objects {name, title, bio, photo}
     topics JSON, -- Array of topics/tags
-    attendance_code VARCHAR(10), -- Optional code for students to mark their own attendance
-    qr_code_data TEXT, -- QR code data for attendance marking
-    instructions TEXT, -- Special instructions for attendees
+    
+    -- Event management
+    created_by INT NOT NULL, -- Org Admin who created
+    status ENUM('draft', 'published', 'ongoing', 'completed', 'cancelled') DEFAULT 'draft',
+    max_attendees INT,
+    
+    -- Attendance tracking
+    attendance_required BOOLEAN DEFAULT TRUE,
+    check_in_window_minutes INT DEFAULT 30, -- Minutes before start time when check-in opens
+    check_out_window_minutes INT DEFAULT 60, -- Minutes after end time when check-out closes
+    
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
     FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
-    FOREIGN KEY (event_type_id) REFERENCES event_types(id) ON DELETE CASCADE,
     FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE,
+    
+    -- Indexes
     INDEX idx_organization (organization_id),
-    INDEX idx_event_type (event_type_id),
     INDEX idx_start_datetime (start_datetime),
     INDEX idx_status (status),
-    INDEX idx_attendance_code (attendance_code)
-);
-
--- Event Registrations table (for events that require registration)
-CREATE TABLE event_registrations (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    event_id INT NOT NULL,
-    user_id INT NOT NULL,
-    registration_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    status ENUM('registered', 'waitlisted', 'cancelled') DEFAULT 'registered',
-    notes TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    UNIQUE KEY unique_event_registration (event_id, user_id),
-    INDEX idx_event (event_id),
-    INDEX idx_user (user_id),
-    INDEX idx_status (status)
-);
-
--- Users table (Students and Staff)
-CREATE TABLE users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    organization_id INT,
-    first_name VARCHAR(100) NOT NULL,
-    last_name VARCHAR(100) NOT NULL,
-    middle_name VARCHAR(100),
-    email VARCHAR(255),
-    password VARCHAR(255) NOT NULL,
-    phone VARCHAR(20),
-    student_id VARCHAR(50), -- School ID number
-    section_id INT, -- Current section enrollment
-    user_type ENUM('student', 'teacher', 'admin', 'staff') DEFAULT 'student',
-    birth_date DATE,
-    address TEXT,
-    emergency_contact_name VARCHAR(255),
-    emergency_contact_phone VARCHAR(20),
-    parent_guardian_name VARCHAR(255),
-    parent_guardian_phone VARCHAR(20),
-    status ENUM('active', 'inactive', 'graduated', 'transferred', 'dropped') DEFAULT 'active',
-    avatar VARCHAR(255),
-    enrollment_date DATE,
-    last_login TIMESTAMP NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
-    FOREIGN KEY (section_id) REFERENCES sections(id) ON DELETE SET NULL,
-    UNIQUE KEY unique_email_organization (email, organization_id),
-    UNIQUE KEY unique_student_id_organization (student_id, organization_id),
-    INDEX idx_organization (organization_id),
-    INDEX idx_email (email),
-    INDEX idx_student_id (student_id),
-    INDEX idx_section (section_id),
-    INDEX idx_status (status),
-    INDEX idx_user_type (user_type)
-);
-
--- Add foreign key for section adviser
-ALTER TABLE sections ADD FOREIGN KEY (adviser_id) REFERENCES users(id) ON DELETE SET NULL;
-
--- Roles table for RBAC
-CREATE TABLE roles (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    organization_id INT,
-    name VARCHAR(100) NOT NULL,
-    description TEXT,
-    permissions JSON,
-    is_system BOOLEAN DEFAULT FALSE,
-    status ENUM('active', 'inactive') DEFAULT 'active',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
-    UNIQUE KEY unique_role_name_organization (name, organization_id),
-    INDEX idx_organization (organization_id),
-    INDEX idx_name (name)
-);
-
--- User roles junction table
-CREATE TABLE user_roles (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    role_id INT NOT NULL,
-    assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    assigned_by INT,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE,
-    FOREIGN KEY (assigned_by) REFERENCES users(id) ON DELETE SET NULL,
-    UNIQUE KEY unique_user_role (user_id, role_id),
-    INDEX idx_user (user_id),
-    INDEX idx_role (role_id)
+    INDEX idx_created_by (created_by)
 );
 
 -- Attendance table
 CREATE TABLE attendance (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
+    
+    -- Core attendance data
+    student_id INT NOT NULL,
+    event_id INT NOT NULL,
     organization_id INT NOT NULL,
-    section_id INT, -- Which section/class was attended
-    date DATE NOT NULL,
-    time_in TIME,
-    time_out TIME,
-    status ENUM('present', 'absent', 'late', 'excused') DEFAULT 'present',
-    attendance_type ENUM('regular', 'meeting', 'event', 'activity') DEFAULT 'regular',
+    
+    -- Attendance tracking
+    check_in_time TIMESTAMP NULL,
+    check_out_time TIMESTAMP NULL,
+    scanned_by INT, -- Staff member who scanned
+    
+    -- Status tracking
+    status ENUM('checked_in', 'checked_out', 'incomplete', 'absent') DEFAULT 'absent',
+    duration_minutes INT DEFAULT 0, -- Calculated attendance duration
+    
+    -- Additional data
     notes TEXT,
-    location VARCHAR(255),
-    marked_by INT, -- Who marked the attendance (teacher/admin)
+    ip_address VARCHAR(45), -- For security tracking
+    device_info VARCHAR(255), -- Device used for scanning
+    
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    
+    FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE,
     FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
-    FOREIGN KEY (section_id) REFERENCES sections(id) ON DELETE SET NULL,
-    FOREIGN KEY (marked_by) REFERENCES users(id) ON DELETE SET NULL,
-    UNIQUE KEY unique_user_date_type (user_id, date, attendance_type),
-    INDEX idx_user_organization (user_id, organization_id),
-    INDEX idx_date (date),
-    INDEX idx_section_date (section_id, date),
-    INDEX idx_status (status)
+    FOREIGN KEY (scanned_by) REFERENCES users(id) ON DELETE SET NULL,
+    
+    -- Constraints
+    UNIQUE KEY unique_student_event (student_id, event_id),
+    
+    -- Indexes
+    INDEX idx_student (student_id),
+    INDEX idx_event (event_id),
+    INDEX idx_organization (organization_id),
+    INDEX idx_status (status),
+    INDEX idx_check_in_time (check_in_time),
+    INDEX idx_scanned_by (scanned_by)
 );
 
--- Refresh tokens table
-CREATE TABLE refresh_tokens (
+-- Password reset tokens
+CREATE TABLE password_resets (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     token VARCHAR(255) NOT NULL,
+    token_hash VARCHAR(255) NOT NULL, -- Hashed version for security
     expires_at TIMESTAMP NOT NULL,
-    revoked_at TIMESTAMP NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    UNIQUE KEY (token),
-    INDEX idx_user (user_id),
-    INDEX idx_expires (expires_at),
-    INDEX idx_token (token)
-);
-
--- Activity logs table
-CREATE TABLE activity_logs (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT,
-    organization_id INT,
-    action VARCHAR(255) NOT NULL,
-    details JSON,
+    used_at TIMESTAMP NULL,
     ip_address VARCHAR(45),
     user_agent TEXT,
+    
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
-    FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
+    
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    
+    UNIQUE KEY unique_token (token),
     INDEX idx_user (user_id),
-    INDEX idx_organization (organization_id),
-    INDEX idx_action (action),
-    INDEX idx_created (created_at)
+    INDEX idx_token_hash (token_hash),
+    INDEX idx_expires_at (expires_at)
 );
 
--- Insert default system roles for school organizations
-INSERT INTO roles (organization_id, name, description, is_system, permissions) VALUES
-(NULL, 'super_admin', 'System Super Administrator', TRUE, '["*"]'),
+-- Notifications table
+CREATE TABLE notifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    organization_id INT NOT NULL,
+    user_id INT, -- NULL for organization-wide notifications
+    
+    -- Notification details
+    type ENUM('event_alert', 'registration_approval', 'attendance_result', 'subscription_expiry', 'system_announcement') NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    
+    -- Notification data
+    data JSON, -- Additional notification data (event_id, etc.)
+    
+    -- Status
+    is_read BOOLEAN DEFAULT FALSE,
+    read_at TIMESTAMP NULL,
+    
+    -- Delivery
+    sent_via ENUM('in_app', 'email', 'sms') DEFAULT 'in_app',
+    sent_at TIMESTAMP NULL,
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    
+    -- Indexes
+    INDEX idx_organization (organization_id),
+    INDEX idx_user (user_id),
+    INDEX idx_type (type),
+    INDEX idx_is_read (is_read),
+    INDEX idx_created_at (created_at)
+);
 
--- Organization-specific roles for student organizations
-(1, 'adviser', 'Organization Adviser - Faculty mentor with full oversight', TRUE, '["users.*", "attendance.*", "events.*", "reports.*", "roles.read", "payments.read", "organization.update"]'),
-(1, 'co_adviser', 'Organization Co-Adviser - Assistant faculty mentor', TRUE, '["users.read", "users.update", "attendance.*", "events.*", "reports.read"]'),
-(1, 'governor', 'Governor - Highest student leadership position', TRUE, '["users.*", "attendance.*", "events.*", "reports.*", "roles.read", "payments.create", "payments.update"]'),
-(1, 'vice_governor', 'Vice Governor - Second highest student leadership', TRUE, '["users.read", "users.update", "attendance.*", "events.*", "reports.*"]'),
-(1, 'secretary', 'Secretary - Records and documentation management', TRUE, '["users.read", "attendance.read", "attendance.create", "events.*", "reports.create"]'),
-(1, 'treasurer', 'Treasurer - Financial management', TRUE, '["users.read", "payments.*", "reports.financial", "events.read"]'),
-(1, 'auditor', 'Auditor - Financial oversight and compliance', TRUE, '["users.read", "payments.read", "reports.*", "attendance.read"]'),
-(1, 'business_manager', 'Business Manager - External relations and partnerships', TRUE, '["users.read", "events.*", "payments.read", "reports.read"]'),
-(1, 'pio', 'Public Information Officer - Communications and media', TRUE, '["users.read", "events.*", "reports.read"]'),
-(1, 'student', 'Student Member - Basic member access', TRUE, '["attendance.own", "events.register", "profile.*"]');
+-- Scan logs for security and auditing
+CREATE TABLE scan_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    organization_id INT NOT NULL,
+    
+    -- Scan attempt details
+    scanned_by INT, -- Staff member attempting scan
+    student_id INT, -- Student being scanned (if valid)
+    event_id INT, -- Event context
+    
+    -- QR Code data
+    qr_code_data TEXT NOT NULL, -- The actual QR code content
+    qr_type ENUM('static', 'dynamic') NOT NULL,
+    
+    -- Scan result
+    scan_result ENUM('success', 'invalid_qr', 'expired_qr', 'student_not_found', 'event_not_active', 'already_checked_in', 'already_checked_out', 'permission_denied', 'rate_limited') NOT NULL,
+    scan_action ENUM('check_in', 'check_out') NOT NULL,
+    
+    -- Security data
+    ip_address VARCHAR(45),
+    user_agent TEXT,
+    device_info VARCHAR(255),
+    
+    -- Rate limiting
+    scan_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
+    FOREIGN KEY (scanned_by) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE SET NULL,
+    
+    -- Indexes for performance and security analysis
+    INDEX idx_organization (organization_id),
+    INDEX idx_scanned_by (scanned_by),
+    INDEX idx_student (student_id),
+    INDEX idx_event (event_id),
+    INDEX idx_scan_result (scan_result),
+    INDEX idx_scan_timestamp (scan_timestamp),
+    INDEX idx_ip_address (ip_address),
+    INDEX idx_rate_limiting (scanned_by, scan_timestamp) -- For rate limiting queries
+);
 
--- Insert default organizations
-INSERT INTO organizations (name, abbreviation, description, contact_email, status, is_owner) VALUES
-('Association of Computing and Engineering Students (ACES)', 'ACES', 'The premier organization for computing and engineering students with lifetime access to all features.', 'admin@aces.edu', 'active', TRUE),
-('System Administration', 'SYS', 'System administration organization', 'admin@system.local', 'active', FALSE);
+-- Insert default ACES organization
+INSERT INTO organizations (name, abbreviation, contact_email, is_default_tenant, status) VALUES 
+('Association of Computing and Engineering Students', 'ACES', 'admin@aces.edu', TRUE, 'active');
 
--- Insert default super admin user (password: admin123)
-INSERT INTO users (organization_id, first_name, last_name, email, password, user_type, status) VALUES
-(2, 'Super', 'Admin', 'admin@system.local', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', 'active');
+-- Create default roles for ACES organization
+INSERT INTO roles (organization_id, name, description, permissions) VALUES 
+(1, 'super_admin', 'System Super Administrator', '["*"]'),
+(1, 'org_admin', 'Organization Administrator', '["users.approve", "events.create", "events.manage", "staff.assign", "reports.view", "notifications.send"]'),
+(1, 'staff', 'Staff Member', '["attendance.scan", "students.view", "events.view"]'),
+(1, 'viewer', 'Read-only Viewer', '["events.view", "attendance.view_own"]'),
+(1, 'student', 'Student', '["profile.update", "events.view", "attendance.view_own"]');
 
--- Assign super admin role
-INSERT INTO user_roles (user_id, role_id) VALUES
-(1, 1);
+-- Create default super admin user
+INSERT INTO users (organization_id, first_name, last_name, email, password, user_type, status, qr_code_static) VALUES 
+(1, 'Super', 'Admin', 'admin@aces.edu', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'staff', 'active', UUID());
 
--- Create indexes for performance
-CREATE INDEX idx_attendance_user_date ON attendance(user_id, date);
-CREATE INDEX idx_attendance_organization_date ON attendance(organization_id, date);
-CREATE INDEX idx_users_organization_status ON users(organization_id, status);
-CREATE INDEX idx_roles_organization_status ON roles(organization_id, status);
-CREATE INDEX idx_sections_organization_year ON sections(organization_id, academic_year_id);
+-- Assign super_admin role to the default user
+INSERT INTO user_roles (user_id, role_id, assigned_by) VALUES 
+(1, 1, 1);
 
+-- Create triggers for automatic QR code generation
+DELIMITER //
+CREATE TRIGGER before_user_insert 
+BEFORE INSERT ON users 
+FOR EACH ROW 
+BEGIN 
+    IF NEW.qr_code_static IS NULL THEN
+        SET NEW.qr_code_static = UUID();
+    END IF;
+END//
+DELIMITER ;
+
+-- Create trigger for attendance duration calculation
+DELIMITER //
+CREATE TRIGGER after_attendance_update 
+BEFORE UPDATE ON attendance 
+FOR EACH ROW 
+BEGIN 
+    IF NEW.check_in_time IS NOT NULL AND NEW.check_out_time IS NOT NULL THEN
+        SET NEW.duration_minutes = TIMESTAMPDIFF(MINUTE, NEW.check_in_time, NEW.check_out_time);
+        
+        IF NEW.check_out_time > NEW.check_in_time THEN
+            SET NEW.status = 'checked_out';
+        END IF;
+    ELSEIF NEW.check_in_time IS NOT NULL AND NEW.check_out_time IS NULL THEN
+        SET NEW.status = 'checked_in';
+    END IF;
+END//
+DELIMITER ;
+
+-- Create indexes for performance optimization
+CREATE INDEX idx_attendance_stats ON attendance (organization_id, status, check_in_time);
+CREATE INDEX idx_user_approval ON users (organization_id, status, approved_at);
+CREATE INDEX idx_event_timing ON events (organization_id, start_datetime, end_datetime, status);
+
+-- Create views for common queries
+CREATE VIEW active_students AS
+SELECT u.*, o.name as organization_name
+FROM users u
+JOIN organizations o ON u.organization_id = o.id
+WHERE u.user_type = 'student' AND u.status = 'active';
+
+CREATE VIEW event_attendance_summary AS
+SELECT 
+    e.id as event_id,
+    e.title as event_title,
+    e.organization_id,
+    COUNT(a.id) as total_attendees,
+    COUNT(CASE WHEN a.status = 'checked_out' THEN 1 END) as completed_attendance,
+    COUNT(CASE WHEN a.status = 'checked_in' THEN 1 END) as incomplete_attendance,
+    AVG(a.duration_minutes) as avg_duration_minutes
+FROM events e
+LEFT JOIN attendance a ON e.id = a.event_id
+GROUP BY e.id, e.title, e.organization_id;
+
+COMMIT;

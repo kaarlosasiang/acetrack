@@ -9,7 +9,7 @@ class RoleController extends Controller {
     
     public function index($params = []) {
         try {
-            $organizationId = $this->getCurrentTenant();
+            $organizationId = $this-getCurrentOrganization();
             $roles = $this->roleModel->getRolesByOrganization($organizationId);
             
             $this->successResponse($roles);
@@ -23,7 +23,7 @@ class RoleController extends Controller {
         $this->validateRequired($input, ['name', 'permissions']);
         
         try {
-            $organizationId = $this->getCurrentTenant();
+            $organizationId = $this-getCurrentOrganization();
             $role = $this->roleModel->createRole($input, $organizationId);
             
             $this->successResponse($role, 'Role created successfully', 201);
@@ -40,7 +40,7 @@ class RoleController extends Controller {
         
         try {
             $input = $this->getInput();
-            $organizationId = $this->getCurrentTenant();
+            $organizationId = $this-getCurrentOrganization();
             
             $updatedRole = $this->roleModel->updateRole($roleId, $input, $organizationId);
             
@@ -57,7 +57,7 @@ class RoleController extends Controller {
         }
         
         try {
-            $organizationId = $this->getCurrentTenant();
+            $organizationId = $this-getCurrentOrganization();
             $this->roleModel->deleteRole($roleId, $organizationId);
             
             $this->successResponse(null, 'Role deleted successfully');

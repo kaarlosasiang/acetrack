@@ -60,8 +60,13 @@ class Controller {
         return $_SESSION['user'] ?? null;
     }
     
+    protected function getCurrentOrganization() {
+        return $_SESSION['organization_id'] ?? null;
+    }
+    
+    // Keep for backward compatibility
     protected function getCurrentTenant() {
-        return $_SESSION['tenant_id'] ?? null;
+        return $this->getCurrentOrganization();
     }
     
     protected function getPaginationParams() {
@@ -106,12 +111,12 @@ class Controller {
     
     protected function logActivity($action, $details = null) {
         $user = $this->getCurrentUser();
-        $tenantId = $this->getCurrentTenant();
+        $organizationId = $this->getCurrentOrganization();
         
         if ($user) {
             $this->db->insert('activity_logs', [
                 'user_id' => $user['id'],
-                'tenant_id' => $tenantId,
+                'organization_id' => $organizationId,
                 'action' => $action,
                 'details' => $details ? json_encode($details) : null,
                 'ip_address' => $_SERVER['REMOTE_ADDR'] ?? null,

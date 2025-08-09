@@ -1,4 +1,6 @@
 <?php
+require_once 'models/Attendance.php';
+
 class AttendanceController extends Controller {
     private $attendanceModel;
     
@@ -9,7 +11,7 @@ class AttendanceController extends Controller {
     
     public function index($params = []) {
         try {
-            $tenantId = $this->getCurrentTenant();
+            $organizationId = $this->getCurrentOrganization();
             $pagination = $this->getPaginationParams();
             $queryParams = $this->getQueryParams();
             
@@ -18,7 +20,7 @@ class AttendanceController extends Controller {
             $departmentId = $queryParams['department_id'] ?? null;
             
             $attendance = $this->attendanceModel->getAttendanceReport(
-                $tenantId, 
+                $organizationId, 
                 $startDate, 
                 $endDate, 
                 $departmentId
@@ -35,87 +37,126 @@ class AttendanceController extends Controller {
         }
     }
     
-    public function checkIn($params = []) {
+    // Mark attendance for a student
+    public function markAttendance($params = []) {
         try {
-            $user = $this->getCurrentUser();
-            $tenantId = $this->getCurrentTenant();
+            $userId = $params['user_id'] ?? null;
+            $organizationId = $this->getCurrentOrganization();
             $input = $this->getInput();
             
-            $location = $input['location'] ?? null;
-            $notes = $input['notes'] ?? null;
+            // Validate required fields
+            $this->validateRequired($input, ['status']);
             
-            $attendance = $this->attendanceModel->checkIn($user['id'], $tenantId, $location, $notes);
+            if (!$userId) {
+                $this->errorResponse('User ID required', 400);
+            }
             
-            $this->logActivity('check_in', [
+            $attendanceData = [
+                'date' => $input['date'] ?? date('Y-m-d'),
+                'status' => $input['status'], // present, absent, late, excused
+                'attendance_type' => $input['attendance_type'] ?? 'regular',
+                'section_id' => $input['section_id'] ?? null,
+                'time_in' => $input['time_in'] ?? null,
+                'time_out' => $input['time_out'] ?? null,
+                'notes' => $input['notes'] ?? null,
+                'location' => $input['location'] ?? null,
+                'marked_by' => $this->getCurrentUser()['id']
+            ];
+            
+            $attendance = $this->attendanceModel->markAttendance($userId, $organizationId, $attendanceData);
+            
+            $this->logActivity('attendance_marked', [
                 'attendance_id' => $attendance['id'],
-                'location' => $location
+                'user_id' => $userId,
+                'status' => $input['status'],
+                'date' => $attendanceData['date']
             ]);
             
-            $this->successResponse($attendance, 'Checked in successfully', 201);
+            $this->successResponse($attendance, 'Attendance marked successfully', 201);
             
         } catch (Exception $e) {
-            $this->errorResponse('Check-in failed: ' . $e->getMessage(), 400);
+            $this->errorResponse('Failed to mark attendance: ' . $e->getMessage(), 400);
         }
     }
     
-    public function checkOut($params = []) {
+    // Bulk mark attendance for multiple students
+    public function bulkMarkAttendance($params = []) {
         try {
-            $user = $this->getCurrentUser();
-            $tenantId = $this->getCurrentTenant();
+            $organizationId = $this->getCurrentOrganization();
             $input = $this->getInput();
             
-            $notes = $input['notes'] ?? null;
+            // Validate required fields
+            $this->validateRequired($input, ['students', 'date', 'attendance_type']);
             
-            $attendance = $this->attendanceModel->checkOut($user['id'], $tenantId, $notes);
+            $date = $input['date'];
+            $attendanceType = $input['attendance_type'];
+            $sectionId = $input['section_id'] ?? null;
+            $markedBy = $this->getCurrentUser()['id'];
             
-            $this->logActivity('check_out', [
-                'attendance_id' => $attendance['id'],
-                'total_hours' => $attendance['total_hours']
+            $results = [];
+            $errors = [];
+            
+            foreach ($input['students'] as $student) {
+                try {
+                    $attendanceData = [
+                        'date' => $date,
+                        'status' => $student['status'],
+                        'attendance_type' => $attendanceType,
+                        'section_id' => $sectionId,
+                        'time_in' => $student['time_in'] ?? null,
+                        'time_out' => $student['time_out'] ?? null,
+                        'notes' => $student['notes'] ?? null,
+                        'location' => $input['location'] ?? null,
+                        'marked_by' => $markedBy
+                    ];
+                    
+                    $attendance = $this->attendanceModel->markAttendance(
+                        $student['user_id'], 
+                        $organizationId, 
+                        $attendanceData
+                    );
+                    
+                    $results[] = [
+                        'user_id' => $student['user_id'],
+                        'attendance' => $attendance,
+                        'success' => true
+                    ];
+                    
+                } catch (Exception $e) {
+                    $errors[] = [
+                        'user_id' => $student['user_id'],
+                        'error' => $e->getMessage()
+                    ];
+                }
+            }
+            
+            $this->logActivity('bulk_attendance_marked', [
+                'date' => $date,
+                'attendance_type' => $attendanceType,
+                'total_students' => count($input['students']),
+                'successful' => count($results),
+                'failed' => count($errors)
             ]);
             
-            $this->successResponse($attendance, 'Checked out successfully');
+            $this->successResponse([
+                'results' => $results,
+                'errors' => $errors,
+                'summary' => [
+                    'total' => count($input['students']),
+                    'successful' => count($results),
+                    'failed' => count($errors)
+                ]
+            ], 'Bulk attendance marking completed');
             
         } catch (Exception $e) {
-            $this->errorResponse('Check-out failed: ' . $e->getMessage(), 400);
-        }
-    }
-    
-    public function startBreak($params = []) {
-        try {
-            $user = $this->getCurrentUser();
-            $tenantId = $this->getCurrentTenant();
-            
-            $attendance = $this->attendanceModel->startBreak($user['id'], $tenantId);
-            
-            $this->logActivity('break_start', ['attendance_id' => $attendance['id']]);
-            
-            $this->successResponse($attendance, 'Break started successfully');
-            
-        } catch (Exception $e) {
-            $this->errorResponse('Failed to start break: ' . $e->getMessage(), 400);
-        }
-    }
-    
-    public function endBreak($params = []) {
-        try {
-            $user = $this->getCurrentUser();
-            $tenantId = $this->getCurrentTenant();
-            
-            $attendance = $this->attendanceModel->endBreak($user['id'], $tenantId);
-            
-            $this->logActivity('break_end', ['attendance_id' => $attendance['id']]);
-            
-            $this->successResponse($attendance, 'Break ended successfully');
-            
-        } catch (Exception $e) {
-            $this->errorResponse('Failed to end break: ' . $e->getMessage(), 400);
+            $this->errorResponse('Failed to mark bulk attendance: ' . $e->getMessage(), 400);
         }
     }
     
     public function myAttendance($params = []) {
         try {
             $user = $this->getCurrentUser();
-            $tenantId = $this->getCurrentTenant();
+            $organizationId = $this->getCurrentOrganization();
             $queryParams = $this->getQueryParams();
             
             $startDate = $queryParams['start_date'] ?? null;
@@ -123,13 +164,13 @@ class AttendanceController extends Controller {
             
             $attendance = $this->attendanceModel->getUserAttendance(
                 $user['id'], 
-                $tenantId, 
+                $organizationId, 
                 $startDate, 
                 $endDate
             );
             
             // Get today's status
-            $todayStatus = $this->attendanceModel->getTodayStatus($user['id'], $tenantId);
+            $todayStatus = $this->attendanceModel->getTodayStatus($user['id'], $organizationId);
             
             $this->successResponse([
                 'attendance' => $attendance,
@@ -148,7 +189,7 @@ class AttendanceController extends Controller {
                 $this->errorResponse('User ID required', 400);
             }
             
-            $tenantId = $this->getCurrentTenant();
+            $organizationId = $this->getCurrentOrganization();
             $queryParams = $this->getQueryParams();
             
             $startDate = $queryParams['start_date'] ?? null;
@@ -156,7 +197,7 @@ class AttendanceController extends Controller {
             
             $attendance = $this->attendanceModel->getUserAttendance(
                 $userId, 
-                $tenantId, 
+                $organizationId, 
                 $startDate, 
                 $endDate
             );
@@ -170,7 +211,7 @@ class AttendanceController extends Controller {
     
     public function report($params = []) {
         try {
-            $tenantId = $this->getCurrentTenant();
+            $organizationId = $this->getCurrentOrganization();
             $queryParams = $this->getQueryParams();
             
             $startDate = $queryParams['start_date'] ?? null;
@@ -179,7 +220,7 @@ class AttendanceController extends Controller {
             $format = $queryParams['format'] ?? 'json'; // json, csv
             
             $attendance = $this->attendanceModel->getAttendanceReport(
-                $tenantId, 
+                $organizationId, 
                 $startDate, 
                 $endDate, 
                 $departmentId
@@ -210,9 +251,9 @@ class AttendanceController extends Controller {
     public function getTodayStatus($params = []) {
         try {
             $user = $this->getCurrentUser();
-            $tenantId = $this->getCurrentTenant();
+            $organizationId = $this->getCurrentOrganization();
             
-            $status = $this->attendanceModel->getTodayStatus($user['id'], $tenantId);
+            $status = $this->attendanceModel->getTodayStatus($user['id'], $organizationId);
             
             $this->successResponse([
                 'status' => $status,

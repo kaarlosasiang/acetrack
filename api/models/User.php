@@ -2,74 +2,95 @@
 class User extends Model {
     protected $table = 'users';
     protected $fillable = [
-        'tenant_id', 'first_name', 'last_name', 'email', 'password', 
- 'phone', 'employee_id', 'department_id', 
-        'status', 'avatar'
+        'organization_id', 'first_name', 'last_name', 'middle_name', 'email', 'password',
+        'phone', 'student_id', 'course', 'year_level', 'user_type', 'status', 'approved_by',
+        'birth_date', 'address', 'emergency_contact_name', 'emergency_contact_phone',
+        'avatar', 'qr_code_static'
     ];
     protected $hidden = ['password'];
     
-    public function create($data, $tenantId = null) {
+    public function create($data, $organizationId = null) {
         if (isset($data['password'])) {
             $auth = new Auth();
             $data['password'] = $auth->hashPassword($data['password']);
         }
         
-        return parent::create($data, $tenantId);
+        if (!isset($data['user_type'])) {
+            $data['user_type'] = 'student';
+        }
+        
+        if ($data['user_type'] === 'student' && !isset($data['status'])) {
+            $data['status'] = 'pending';
+        }
+        
+        if (!isset($data['qr_code_static'])) {
+            $data['qr_code_static'] = bin2hex(random_bytes(16));
+        }
+        
+        return parent::create($data, $organizationId);
     }
     
-   public function update($id, $data, $tenantId = null) {
+    public function update($id, $data, $organizationId = null) {
         if (isset($data['password'])) {
             $auth = new Auth();
             $data['password'] = $auth->hashPassword($data['password']);
         }
         
-        return parent::update($id, $data, $tenantId);
+        return parent::update($id, $data, $organizationId);
     }
     
-    public function getWithRoles($id, $tenantId = null) {
-        $user = $this->find($id, $tenantId);
+    public function getWithRoles($id, $organizationId = null) {
+        $user = $this->find($id, $organizationId);
         if (!$user) {
             return null;
         }
         
         $roles = $this->db->fetchAll(
-            "SELECT r.id, r.name, r.description 
+            "SELECT r.id, r.name, r.description, r.permissions 
              FROM roles r 
              INNER JOIN user_roles ur ON r.id = ur.role_id 
              WHERE ur.user_id = :user_id",
             ['user_id' => $id]
         );
         
+        foreach ($roles as &$role) {
+            if ($role['permissions']) {
+                $role['permissions'] = json_decode($role['permissions'], true);
+            }
+        }
+        
         $user['roles'] = $roles;
         return $user;
     }
     
-    public function assignRoles($userId, $roleIds, $tenantId = null) {
-        // Remove existing roles
-        $this->db->query(
-            "DELETE FROM user_roles WHERE user_id = :user_id",
-            ['user_id' => $userId]
+    public function assignRole($userId, $roleName, $organizationId) {
+        $role = $this->db->fetch(
+            "SELECT id FROM roles WHERE name = :name AND organization_id = :organization_id",
+            ['name' => $roleName, 'organization_id' => $organizationId]
         );
-        
-        // Assign new roles
-        foreach ($roleIds as $roleId) {
+
+        if ($role) {
             $this->db->insert('user_roles', [
                 'user_id' => $userId,
-                'role_id' => $roleId
+                'role_id' => $role['id']
             ]);
         }
     }
     
-    public function findByEmail($email, $tenantId = null) {
-        return $this->findBy(['email' => $email], $tenantId);
+    public function findByEmail($email) {
+        return $this->findBy(['email' => $email]);
+    }
+
+    public function findByQrCode($qrCode) {
+        return $this->findBy(['qr_code_static' => $qrCode]);
     }
     
-    public function findByEmployeeId($employeeId, $tenantId = null) {
-        return $this->findBy(['employee_id' => $employeeId], $tenantId);
-    }
-    
-    public function getByDepartment($departmentId, $tenantId = null) {
-        return $this->where(['department_id' => $departmentId], $tenantId);
+    public function approve($userId, $adminId) {
+        return $this->update($userId, [
+            'status' => 'active',
+            'approved_by' => $adminId,
+            'approved_at' => date('Y-m-d H:i:s')
+        ]);
     }
 }
 

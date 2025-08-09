@@ -1,10 +1,12 @@
 <?php
 class AuthController extends Controller {
     private $userModel;
+    private $passwordResetModel;
     
     public function __construct() {
         parent::__construct();
         $this->userModel = new User();
+        $this->passwordResetModel = new PasswordReset();
     }
     
     public function login($params = []) {
@@ -21,7 +23,7 @@ class AuthController extends Controller {
             // Generate tokens
             $tokenPayload = [
                 'user_id' => $user['id'],
-                'tenant_id' => $user['tenant_id'],
+                'organization_id' => $user['organization_id'],
                 'email' => $user['email']
             ];
             
@@ -45,7 +47,7 @@ class AuthController extends Controller {
     
     public function register($params = []) {
         $input = $this->getInput();
-        $this->validateRequired($input, ['first_name', 'last_name', 'email', 'password']);
+        $this->validateRequired($input, ['first_name', 'last_name', 'email', 'password', 'organization_id', 'course', 'year_level']);
         
         try {
             // Check if email already exists
@@ -54,46 +56,50 @@ class AuthController extends Controller {
                 $this->errorResponse('Email already registered', 409);
             }
             
-            // For registration, user must specify tenant_id or it should be a super admin creating first tenant
-            if (!isset($input['tenant_id'])) {
-                $this->errorResponse('Tenant ID required for registration', 400);
+            // Validate organization exists
+            $organization = $this->db->fetch(
+                "SELECT * FROM organizations WHERE id = :id AND status = 'active'",
+                ['id' => $input['organization_id']]
+            );
+            
+            if (!$organization) {
+                $this->errorResponse('Organization not found or inactive', 404);
             }
             
-            // Create user
+            // Create user (will be in 'pending' status for students)
             $userData = [
-                'tenant_id' => $input['tenant_id'],
+                'organization_id' => $input['organization_id'],
                 'first_name' => $input['first_name'],
                 'last_name' => $input['last_name'],
+                'middle_name' => $input['middle_name'] ?? null,
                 'email' => $input['email'],
                 'password' => $input['password'],
                 'phone' => $input['phone'] ?? null,
-                'employee_id' => $input['employee_id'] ?? null,
-                'status' => 'active'
+                'student_id' => $input['student_id'] ?? null,
+                'course' => $input['course'],
+                'year_level' => $input['year_level'],
+                'user_type' => 'student', // Only students can register themselves
+                'birth_date' => $input['birth_date'] ?? null,
+                'address' => $input['address'] ?? null,
+                'emergency_contact_name' => $input['emergency_contact_name'] ?? null,
+                'emergency_contact_phone' => $input['emergency_contact_phone'] ?? null
             ];
             
-            $user = $this->userModel->create($userData, $input['tenant_id']);
+            $user = $this->userModel->create($userData, $input['organization_id']);
             
-            // Assign default employee role if no roles specified
-            if (isset($input['roles']) && is_array($input['roles'])) {
-                $this->userModel->assignRoles($user['id'], $input['roles']);
-            } else {
-                // Get default employee role
-                $employeeRole = $this->db->fetch(
-                    "SELECT id FROM roles WHERE name = 'employee' AND tenant_id = :tenant_id",
-                    ['tenant_id' => $input['tenant_id']]
-                );
-                
-                if ($employeeRole) {
-                    $this->userModel->assignRoles($user['id'], [$employeeRole['id']]);
-                }
-            }
-            
-            // Get user with roles
-            $userWithRoles = $this->userModel->getWithRoles($user['id'], $input['tenant_id']);
+            // Assign student role
+            $this->userModel->assignRole($user['id'], 'student', $input['organization_id']);
             
             $this->logActivity('user_registration', ['user_id' => $user['id']]);
             
-            $this->successResponse($userWithRoles, 'User registered successfully', 201);
+            $this->successResponse([
+                'id' => $user['id'],
+                'first_name' => $user['first_name'],
+                'last_name' => $user['last_name'],
+                'email' => $user['email'],
+                'status' => $user['status'],
+                'message' => 'Registration successful. Please wait for admin approval to access full features.'
+            ], 'User registered successfully. Pending approval.', 201);
             
         } catch (Exception $e) {
             $this->errorResponse('Registration failed: ' . $e->getMessage(), 500);
@@ -120,7 +126,7 @@ class AuthController extends Controller {
             // Generate new access token
             $tokenPayload = [
                 'user_id' => $user['id'],
-                'tenant_id' => $user['tenant_id'],
+                'organization_id' => $user['organization_id'],
                 'email' => $user['email']
             ];
             
@@ -155,6 +161,65 @@ class AuthController extends Controller {
             
         } catch (Exception $e) {
             $this->errorResponse('Logout failed: ' . $e->getMessage(), 500);
+        }
+    }
+    
+    public function forgotPassword($params = []) {
+        $input = $this->getInput();
+        $this->validateRequired($input, ['email']);
+        
+        try {
+            $user = $this->userModel->findByEmail($input['email']);
+            
+            if (!$user) {
+                // Don't reveal if email exists or not for security
+                $this->successResponse(null, 'If the email exists, a password reset link has been sent.');
+                return;
+            }
+            
+            // Generate reset token
+            $token = $this->passwordResetModel->createResetToken($user['id'], 30); // 30 minutes
+            
+            // In a real application, you would send an email here
+            // For now, we'll just return the token (remove this in production)
+            $this->logActivity('password_reset_requested', ['user_id' => $user['id']]);
+            
+            $this->successResponse([
+                'reset_token' => $token, // Remove this in production
+                'expires_in_minutes' => 30
+            ], 'Password reset token generated. Check your email for instructions.');
+            
+        } catch (Exception $e) {
+            $this->errorResponse('Failed to process password reset request: ' . $e->getMessage(), 500);
+        }
+    }
+    
+    public function resetPassword($params = []) {
+        $input = $this->getInput();
+        $this->validateRequired($input, ['token', 'password']);
+        
+        try {
+            // Validate reset token
+            $resetRecord = $this->passwordResetModel->validateToken($input['token']);
+            
+            if (!$resetRecord) {
+                $this->errorResponse('Invalid or expired reset token', 400);
+            }
+            
+            // Update user password
+            $this->userModel->update($resetRecord['user_id'], [
+                'password' => $input['password']
+            ]);
+            
+            // Mark token as used
+            $this->passwordResetModel->useToken($input['token']);
+            
+            $this->logActivity('password_reset_completed', ['user_id' => $resetRecord['user_id']]);
+            
+            $this->successResponse(null, 'Password reset successfully');
+            
+        } catch (Exception $e) {
+            $this->errorResponse('Failed to reset password: ' . $e->getMessage(), 500);
         }
     }
 }
