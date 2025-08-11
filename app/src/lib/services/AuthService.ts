@@ -29,19 +29,17 @@ const authService = {
   /**
    * Sign in with email and password
    */
-  async signIn(email: string, password: string) {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+  async login(values: { email: string; password: string }) {
+    const { data, error } = await supabase.auth.signInWithPassword(values);
     if (error) throw error;
+    
     return data;
   },
 
   /**
    * Sign up with email and password
    */
-  async signUp(email: string, password: string, userData?: Partial<User>) {
+  async register(email: string, password: string, userData?: Partial<User>) {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -56,7 +54,7 @@ const authService = {
   /**
    * Sign out the current user
    */
-  async signOut() {
+  async logout() {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
   },
