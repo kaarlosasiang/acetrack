@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/config/supabase";
-import type { User } from "@/lib/types/User";
+import type { User } from "@/lib/types/Database";
 
 const authService = {
   /**
@@ -47,6 +47,34 @@ const authService = {
         data: userData,
       },
     });
+    if (error) throw error;
+    return data;
+  },
+
+  /**
+   * Complete registration by creating user profile
+   */
+  async createUserProfile(profileData: {
+    student_id: string;
+    firstname: string;
+    middlename?: string;
+    lastname: string;
+    course_id: number;
+    year_id: number;
+    email: string;
+    role_id?: number;
+  }) {
+    const { data, error } = await supabase
+      .from("user_profile")
+      .insert({
+        ...profileData,
+        password: '', // Don't store password in profile table
+        role_id: profileData.role_id || 1, // Default to student role
+        avatar: null,
+      })
+      .select()
+      .single();
+
     if (error) throw error;
     return data;
   },

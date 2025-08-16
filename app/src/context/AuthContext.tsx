@@ -6,7 +6,7 @@ import {
   useEffect,
   useState,
 } from "react";
-import { User } from "@/lib/types/User";
+import { User } from "@/lib/types/Database";
 import type { User as SupabaseUser, Session } from "@supabase/supabase-js";
 
 // Type for login response
@@ -41,19 +41,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       const supabaseUser = await authService.getUser();
       if (supabaseUser) {
-        // Here you would fetch your custom user profile from the database
-        // For now, let's create a basic mapping
+        // Here you should fetch your custom user profile from the user_profile table
+        // For now, let's create a basic mapping based on your schema
         const userProfile: User = {
-          id: supabaseUser.id,
+          student_id: supabaseUser.user_metadata?.student_id || supabaseUser.id,
+          firstname: supabaseUser.user_metadata?.firstname || '',
+          middlename: supabaseUser.user_metadata?.middlename || null,
+          lastname: supabaseUser.user_metadata?.lastname || '',
+          course_id: supabaseUser.user_metadata?.course_id || 1,
+          year_id: supabaseUser.user_metadata?.year_id || 1,
+          avatar: supabaseUser.user_metadata?.avatar || null,
+          password: '', // Don't store password in context
+          role_id: supabaseUser.user_metadata?.role_id || 1,
           email: supabaseUser.email || '',
-          full_name: supabaseUser.user_metadata?.full_name || null,
-          avatar_url: supabaseUser.user_metadata?.avatar_url || null,
-          role: supabaseUser.user_metadata?.role || 'student',
-          year_level: supabaseUser.user_metadata?.year_level || null,
-          course: supabaseUser.user_metadata?.course || null,
-          student_id: supabaseUser.user_metadata?.student_id || null,
-          created_at: supabaseUser.created_at || new Date().toISOString(),
-          updated_at: supabaseUser.updated_at || new Date().toISOString(),
         };
         setUser(userProfile);
       } else {

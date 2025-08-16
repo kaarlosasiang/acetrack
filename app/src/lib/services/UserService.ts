@@ -1,15 +1,15 @@
 import { supabase } from "../config/supabase";
-import type { User } from "../types/User";
+import type { UserProfile } from "../types/Database";
 
 const userService = {
   /**
-   * Get user profile by ID
+   * Get user profile by student ID
    */
-  async getProfile(userId: string): Promise<User | null> {
+  async getProfile(studentId: string): Promise<UserProfile | null> {
     const { data, error } = await supabase
-      .from("users")
+      .from("user_profile")
       .select("*")
-      .eq("id", userId)
+      .eq("student_id", studentId)
       .single();
 
     if (error && error.code !== "PGRST116") throw error;
@@ -19,11 +19,11 @@ const userService = {
   /**
    * Update user profile
    */
-  async updateProfile(userId: string, updates: Partial<User>) {
+  async updateProfile(studentId: string, updates: Partial<UserProfile>) {
     const { data, error } = await supabase
-      .from("users")
-      .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq("id", userId)
+      .from("user_profile")
+      .update(updates)
+      .eq("student_id", studentId)
       .select()
       .single();
 
@@ -35,20 +35,24 @@ const userService = {
    * Get all users with optional filters
    */
   async getUsers(filters?: {
-    role?: User["role"];
-    course?: string;
-    yearLevel?: string;
+    role_id?: number;
+    course_id?: number;
+    year_id?: number;
   }) {
-    let query = supabase.from("users").select("*");
+    let query = supabase.from("user_profile").select(`
+      *,
+      course:courses(course_name),
+      role:roles(type)
+    `);
 
-    if (filters?.role) {
-      query = query.eq("role", filters.role);
+    if (filters?.role_id) {
+      query = query.eq("role_id", filters.role_id);
     }
-    if (filters?.course) {
-      query = query.eq("course", filters.course);
+    if (filters?.course_id) {
+      query = query.eq("course_id", filters.course_id);
     }
-    if (filters?.yearLevel) {
-      query = query.eq("year_level", filters.yearLevel);
+    if (filters?.year_id) {
+      query = query.eq("year_id", filters.year_id);
     }
 
     const { data, error } = await query.order("full_name");

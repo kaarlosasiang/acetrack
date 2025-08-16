@@ -8,179 +8,142 @@
 export interface Database {
   public: {
     Tables: {
-      users: {
+      user_profile: {
         Row: {
-          id: string
+          student_id: string
+          firstname: string
+          middlename: string | null
+          lastname: string
+          course_id: number
+          year_id: number
+          avatar: string | null
+          password: string
+          role_id: number
           email: string
-          full_name: string | null
-          avatar_url: string | null
-          role: 'student' | 'instructor' | 'admin'
-          year_level: string | null
-          course: string | null
-          student_id: string | null
-          created_at: string
-          updated_at: string
         }
         Insert: {
-          id?: string
+          student_id: string
+          firstname: string
+          middlename?: string | null
+          lastname: string
+          course_id: number
+          year_id: number
+          avatar?: string | null
+          password: string
+          role_id: number
           email: string
-          full_name?: string | null
-          avatar_url?: string | null
-          role?: 'student' | 'instructor' | 'admin'
-          year_level?: string | null
-          course?: string | null
-          student_id?: string | null
-          created_at?: string
-          updated_at?: string
         }
         Update: {
-          id?: string
+          student_id?: string
+          firstname?: string
+          middlename?: string | null
+          lastname?: string
+          course_id?: number
+          year_id?: number
+          avatar?: string | null
+          password?: string
+          role_id?: number
           email?: string
-          full_name?: string | null
-          avatar_url?: string | null
-          role?: 'student' | 'instructor' | 'admin'
-          year_level?: string | null
-          course?: string | null
-          student_id?: string | null
-          updated_at?: string
         }
       }
       events: {
         Row: {
-          id: string
-          title: string
+          id: number
+          name: string
           description: string | null
-          event_date: string
-          start_time: string
-          end_time: string
-          location: string | null
-          instructor_id: string
-          course: string | null
-          year_level: string | null
-          is_active: boolean
-          created_at: string
-          updated_at: string
+          banner: string | null
+          status: number
+          start_datetime: string
+          end_datetime: string
         }
         Insert: {
-          id?: string
-          title: string
+          id?: number
+          name: string
           description?: string | null
-          event_date: string
-          start_time: string
-          end_time: string
-          location?: string | null
-          instructor_id: string
-          course?: string | null
-          year_level?: string | null
-          is_active?: boolean
-          created_at?: string
-          updated_at?: string
+          banner?: string | null
+          status: number
+          start_datetime: string
+          end_datetime: string
         }
         Update: {
-          id?: string
-          title?: string
+          id?: number
+          name?: string
           description?: string | null
-          event_date?: string
-          start_time?: string
-          end_time?: string
-          location?: string | null
-          instructor_id?: string
-          course?: string | null
-          year_level?: string | null
-          is_active?: boolean
-          updated_at?: string
+          banner?: string | null
+          status?: number
+          start_datetime?: string
+          end_datetime?: string
         }
       }
-      attendances: {
+      attendance: {
         Row: {
-          id: string
-          event_id: string
-          user_id: string
-          status: 'present' | 'absent' | 'late' | 'excused'
-          check_in_time: string | null
-          check_out_time: string | null
-          location_verified: boolean
-          notes: string | null
-          created_at: string
-          updated_at: string
+          id: number
+          event_id: number
+          student_id: string
+          firstname: string
+          middlename: string | null
+          lastname: string
+          course_id: number
+          year_level: string
+          avatar: string | null
+          time_in: string | null
+          time_out: string | null
         }
         Insert: {
-          id?: string
-          event_id: string
-          user_id: string
-          status?: 'present' | 'absent' | 'late' | 'excused'
-          check_in_time?: string | null
-          check_out_time?: string | null
-          location_verified?: boolean
-          notes?: string | null
-          created_at?: string
-          updated_at?: string
+          id?: number
+          event_id: number
+          student_id: string
+          firstname: string
+          middlename?: string | null
+          lastname: string
+          course_id: number
+          year_level: string
+          avatar?: string | null
+          time_in?: string | null
+          time_out?: string | null
         }
         Update: {
-          id?: string
-          event_id?: string
-          user_id?: string
-          status?: 'present' | 'absent' | 'late' | 'excused'
-          check_in_time?: string | null
-          check_out_time?: string | null
-          location_verified?: boolean
-          notes?: string | null
-          updated_at?: string
+          id?: number
+          event_id?: number
+          student_id?: string
+          firstname?: string
+          middlename?: string | null
+          lastname?: string
+          course_id?: number
+          year_level?: string
+          avatar?: string | null
+          time_in?: string | null
+          time_out?: string | null
         }
       }
-    }
-    Views: {
-      attendance_summary: {
+      courses: {
         Row: {
-          user_id: string
-          full_name: string | null
-          email: string
-          total_events: number
-          present_count: number
-          absent_count: number
-          late_count: number
-          excused_count: number
-          attendance_rate: number
+          id: number
+          course_name: string
+        }
+        Insert: {
+          id?: number
+          course_name: string
+        }
+        Update: {
+          id?: number
+          course_name?: string
         }
       }
-      event_attendance_stats: {
+      roles: {
         Row: {
-          event_id: string
-          event_title: string
-          event_date: string
-          total_registered: number
-          present_count: number
-          absent_count: number
-          late_count: number
-          attendance_rate: number
+          id: number
+          type: string
+        }
+        Insert: {
+          id?: number
+          type: string
+        }
+        Update: {
+          id?: number
+          type?: string
         }
       }
-    }
-    Functions: {
-      get_user_attendance_rate: {
-        Args: {
-          user_uuid: string
-          start_date?: string
-          end_date?: string
-        }
-        Returns: number
-      }
-      get_event_statistics: {
-        Args: {
-          event_uuid: string
-        }
-        Returns: {
-          total_expected: number
-          present_count: number
-          absent_count: number
-          late_count: number
-          attendance_rate: number
-        }
-      }
-    }
-    Enums: {
-      user_role: 'student' | 'instructor' | 'admin'
-      attendance_status: 'present' | 'absent' | 'late' | 'excused'
     }
   }
 }
@@ -189,4 +152,29 @@ export interface Database {
 export type Tables<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Row']
 export type TablesInsert<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Insert']
 export type TablesUpdate<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Update']
-export type Enums<T extends keyof Database['public']['Enums']> = Database['public']['Enums'][T]
+
+// Simple type aliases - no need for separate files
+export type UserProfile = Tables<'user_profile'>
+export type UserProfileInsert = TablesInsert<'user_profile'>
+export type UserProfileUpdate = TablesUpdate<'user_profile'>
+
+export type Event = Tables<'events'>
+export type EventInsert = TablesInsert<'events'>
+export type EventUpdate = TablesUpdate<'events'>
+
+export type Attendance = Tables<'attendance'>
+export type AttendanceInsert = TablesInsert<'attendance'>
+export type AttendanceUpdate = TablesUpdate<'attendance'>
+
+export type Course = Tables<'courses'>
+export type CourseInsert = TablesInsert<'courses'>
+export type CourseUpdate = TablesUpdate<'courses'>
+
+export type Role = Tables<'roles'>
+export type RoleInsert = TablesInsert<'roles'>
+export type RoleUpdate = TablesUpdate<'roles'>
+
+// Keep User as alias for UserProfile for backward compatibility
+export type User = UserProfile
+export type UserInsert = UserProfileInsert
+export type UserUpdate = UserProfileUpdate
