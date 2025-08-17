@@ -45,11 +45,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         // For now, let's create a basic mapping based on your schema
         const userProfile: User = {
           student_id: supabaseUser.user_metadata?.student_id || supabaseUser.id,
-          firstname: supabaseUser.user_metadata?.firstname || '',
-          middlename: supabaseUser.user_metadata?.middlename || null,
-          lastname: supabaseUser.user_metadata?.lastname || '',
+          first_name: supabaseUser.user_metadata?.first_name || '',
+          middle_initial: supabaseUser.user_metadata?.middle_initial || null,
+          last_name: supabaseUser.user_metadata?.last_name || '',
           course_id: supabaseUser.user_metadata?.course_id || 1,
-          year_id: supabaseUser.user_metadata?.year_id || 1,
+          year_level: supabaseUser.user_metadata?.year_level || 1,
           avatar: supabaseUser.user_metadata?.avatar || null,
           password: '', // Don't store password in context
           role_id: supabaseUser.user_metadata?.role_id || 1,

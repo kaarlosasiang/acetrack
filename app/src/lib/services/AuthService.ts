@@ -54,32 +54,6 @@ const authService = {
   },
 
   /**
-   * Complete registration by creating user profile
-   */
-  async createUserProfile(profileData: {
-    student_id: string;
-    first_name: string;
-    middle_name?: string;
-    last_name: string;
-    course_id: number;
-    year_level: number;
-    role_id?: number;
-  }) {
-    const { data, error } = await supabase
-      .from("user_profiles")
-      .insert({
-        ...profileData,
-        role_id: profileData.role_id || 1, // Default to student role
-        avatar: null,
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  /**
    * Sign out the current user
    */
   async logout() {

@@ -23,11 +23,11 @@ export interface Database {
         }
         Insert: {
           student_id: string
-          firstname: string
-          middlename?: string | null
-          lastname: string
+          first_name: string
+          middle_initial?: string | null
+          last_name: string
           course_id: number
-          year_id: number
+          year_level: number
           avatar?: string | null
           password: string
           role_id: number
@@ -35,11 +35,11 @@ export interface Database {
         }
         Update: {
           student_id?: string
-          firstname?: string
-          middlename?: string | null
-          lastname?: string
+          first_name?: string
+          middle_initial?: string | null
+          last_name?: string
           course_id?: number | null
-          year_id?: number
+          year_level?: number
           avatar?: string | null
           password?: string
           role_id?: number
