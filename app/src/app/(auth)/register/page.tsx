@@ -18,21 +18,17 @@ export default function RegisterPage() {
     setIsLoading(true);
     
     try {
-      // Step 1: Get course ID from course value
-      const courseId = await courseService.getCourseIdByValue(data.course);
-      if (!courseId) {
-        toast.error("Invalid course selected. Please try again.");
-        return;
-      }
+    
+
 
       // Step 2: Create Supabase auth user
       const authResult = await authService.register(data.email, data.password, {
-        student_id: data.studentId,
-        firstname: data.firstName,
-        lastname: data.lastName,
+        student_id: data.student_id,
+        first_name: data.first_name,
+        last_name: data.last_name,
         email: data.email,
-        course_id: courseId,
-        year_id: data.yearLevel,
+        course_id: data.course_id,
+        year_level: data.year_level,
         role_id: 1, // Default to student role
       });
 

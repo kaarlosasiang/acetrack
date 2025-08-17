@@ -14,8 +14,8 @@ export interface Database {
           firstname: string
           middlename: string | null
           lastname: string
-          course_id: number
-          year_id: number
+          course_id: any
+          year_level: number
           avatar: string | null
           password: string
           role_id: number
@@ -38,7 +38,7 @@ export interface Database {
           firstname?: string
           middlename?: string | null
           lastname?: string
-          course_id?: number
+          course_id?: number | null
           year_id?: number
           avatar?: string | null
           password?: string

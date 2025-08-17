@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff } from "lucide-react";
@@ -31,8 +31,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { registerSchema, type RegisterFormData } from "./schema";
-import { Courses } from "@/lib/constants/courses";
 import { YearLevels } from "@/lib/constants/year-levels";
+import courseService from "@/lib/services/CourseService";
 
 interface RegisterFormProps {
   className?: string;
@@ -40,29 +40,35 @@ interface RegisterFormProps {
   isLoading?: boolean;
 }
 
-export function RegisterForm({ className, onSubmit, isLoading: externalLoading }: RegisterFormProps) {
+export function RegisterForm({
+  className,
+  onSubmit,
+  isLoading: externalLoading,
+}: RegisterFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
+  const [courses, setCourses] = useState<{ id: number; course_name: string }[] | undefined>();
   // Use external loading state if provided, otherwise use internal state
   const loading = externalLoading ?? isLoading;
 
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      firstName: "",
-      lastName: "",
-      email: "",
-      studentId: "",
-      course: "",
-      yearLevel: 1,
-      password: "",
+      first_name: "John",
+      last_name: "Doe",
+      email: "johndoe@example.com",
+      student_id: "123456",
+      course_id: "1",
+      year_level: 1,
+      password: "r@thernotsaY64",
       confirmPassword: "",
     },
   });
 
   const handleSubmit = async (data: RegisterFormData) => {
+    console.log(data);
+    
     if (onSubmit) {
       // Only set internal loading if no external loading is provided
       if (externalLoading === undefined) {
@@ -78,6 +84,16 @@ export function RegisterForm({ className, onSubmit, isLoading: externalLoading }
     }
   };
 
+  useEffect(() => {
+    const fetchCourses = async () => {
+      const courses = await courseService.getCourses();
+      console.log(courses);
+      
+      setCourses(courses);
+    };
+    fetchCourses();
+  }, []);
+
   return (
     <div className={cn("flex flex-col gap-6", className)}>
       <Card>
@@ -89,20 +105,20 @@ export function RegisterForm({ className, onSubmit, isLoading: externalLoading }
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+            <form
+              onSubmit={form.handleSubmit(handleSubmit)}
+              className="space-y-6"
+            >
               {/* Name Fields */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="firstName"
+                  name="first_name"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>First Name</FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder="Enter your first name"
-                          {...field}
-                        />
+                        <Input placeholder="Enter your first name" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -110,15 +126,12 @@ export function RegisterForm({ className, onSubmit, isLoading: externalLoading }
                 />
                 <FormField
                   control={form.control}
-                  name="lastName"
+                  name="last_name"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Last Name</FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder="Enter your last name"
-                          {...field}
-                        />
+                        <Input placeholder="Enter your last name" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -148,15 +161,12 @@ export function RegisterForm({ className, onSubmit, isLoading: externalLoading }
               {/* Student ID Field */}
               <FormField
                 control={form.control}
-                name="studentId"
+                name="student_id"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Student ID</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="Enter your student ID"
-                        {...field}
-                      />
+                      <Input placeholder="Enter your student ID" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -167,22 +177,26 @@ export function RegisterForm({ className, onSubmit, isLoading: externalLoading }
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="course"
+                  name="course_id"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Course</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
                         <FormControl>
-                          <SelectTrigger className="w-full">
+                          <SelectTrigger>
                             <SelectValue placeholder="Select your course" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {Courses.map((course) => (
-                            <SelectItem key={course.value} value={course.value}>
-                              {course.label}
-                            </SelectItem>
-                          ))}
+                          {courses &&
+                            courses.map((course) => (
+                              <SelectItem key={course.id} value={course.id.toString()}>
+                                {course.course_name}
+                              </SelectItem>
+                            ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -191,12 +205,14 @@ export function RegisterForm({ className, onSubmit, isLoading: externalLoading }
                 />
                 <FormField
                   control={form.control}
-                  name="yearLevel"
+                  name="year_level"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Year Level</FormLabel>
-                      <Select 
-                        onValueChange={(value) => field.onChange(parseInt(value))} 
+                      <Select
+                        onValueChange={(value) =>
+                          field.onChange(parseInt(value))
+                        }
                         defaultValue={field.value.toString()}
                       >
                         <FormControl>
@@ -206,7 +222,10 @@ export function RegisterForm({ className, onSubmit, isLoading: externalLoading }
                         </FormControl>
                         <SelectContent>
                           {YearLevels.map((level) => (
-                            <SelectItem key={level.value} value={level.value.toString()}>
+                            <SelectItem
+                              key={level.value}
+                              value={level.value.toString()}
+                            >
                               {level.label}
                             </SelectItem>
                           ))}
@@ -270,7 +289,9 @@ export function RegisterForm({ className, onSubmit, isLoading: externalLoading }
                           variant="ghost"
                           size="sm"
                           className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          onClick={() =>
+                            setShowConfirmPassword(!showConfirmPassword)
+                          }
                         >
                           {showConfirmPassword ? (
                             <EyeOff className="h-4 w-4" />
@@ -293,7 +314,10 @@ export function RegisterForm({ className, onSubmit, isLoading: externalLoading }
               {/* Login Link */}
               <div className="text-center text-sm">
                 Already have an account?{" "}
-                <Link href="/login" className="underline underline-offset-4 hover:text-primary">
+                <Link
+                  href="/login"
+                  className="underline underline-offset-4 hover:text-primary"
+                >
                   Sign in
                 </Link>
               </div>
@@ -301,16 +325,23 @@ export function RegisterForm({ className, onSubmit, isLoading: externalLoading }
           </Form>
         </CardContent>
       </Card>
-      
+
       <div className="text-muted-foreground text-center text-xs text-balance">
         By creating an account, you agree to our{" "}
-        <Link href="/terms-and-conditions" className="underline underline-offset-4 hover:text-primary">
+        <Link
+          href="/terms-and-conditions"
+          className="underline underline-offset-4 hover:text-primary"
+        >
           Terms of Service
         </Link>{" "}
         and{" "}
-        <Link href="/privacy-policy" className="underline underline-offset-4 hover:text-primary">
+        <Link
+          href="/privacy-policy"
+          className="underline underline-offset-4 hover:text-primary"
+        >
           Privacy Policy
-        </Link>.
+        </Link>
+        .
       </div>
     </div>
   );

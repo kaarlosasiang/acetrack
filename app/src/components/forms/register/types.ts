@@ -1,10 +1,10 @@
 export interface RegisterFormData {
-  firstName: string;
-  lastName: string;
+  first_name: string;
+  last_name: string;
   email: string;
-  studentId: string;
-  course: string;
-  yearLevel: number;
+  student_id: string;
+  course_id: any;
+  year_level: number;
   password: string;
   confirmPassword: string;
 }

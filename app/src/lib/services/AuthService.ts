@@ -32,7 +32,7 @@ const authService = {
   async login(values: { email: string; password: string }) {
     const { data, error } = await supabase.auth.signInWithPassword(values);
     if (error) throw error;
-    
+
     return data;
   },
 
@@ -40,11 +40,13 @@ const authService = {
    * Sign up with email and password
    */
   async register(email: string, password: string, userData?: Partial<User>) {
+    console.log(userData);
+    
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: userData,
+        data: { avatar: "", ...userData },
       },
     });
     if (error) throw error;
@@ -68,7 +70,7 @@ const authService = {
       .from("user_profile")
       .insert({
         ...profileData,
-        password: '', // Don't store password in profile table
+        password: "", // Don't store password in profile table
         role_id: profileData.role_id || 1, // Default to student role
         avatar: null,
       })
