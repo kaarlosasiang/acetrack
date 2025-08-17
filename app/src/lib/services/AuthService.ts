@@ -58,19 +58,17 @@ const authService = {
    */
   async createUserProfile(profileData: {
     student_id: string;
-    firstname: string;
-    middlename?: string;
-    lastname: string;
+    first_name: string;
+    middle_name?: string;
+    last_name: string;
     course_id: number;
-    year_id: number;
-    email: string;
+    year_level: number;
     role_id?: number;
   }) {
     const { data, error } = await supabase
-      .from("user_profile")
+      .from("user_profiles")
       .insert({
         ...profileData,
-        password: "", // Don't store password in profile table
         role_id: profileData.role_id || 1, // Default to student role
         avatar: null,
       })

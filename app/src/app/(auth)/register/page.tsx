@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { RegisterForm } from "@/components/forms/register/form";
 import { RegisterFormData } from "@/components/forms/register/schema";
 import authService from "@/lib/services/AuthService";
-import courseService from "@/lib/services/CourseService";
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -18,10 +17,6 @@ export default function RegisterPage() {
     setIsLoading(true);
     
     try {
-    
-
-
-      // Step 2: Create Supabase auth user
       const authResult = await authService.register(data.email, data.password, {
         student_id: data.student_id,
         first_name: data.first_name,
@@ -36,17 +31,6 @@ export default function RegisterPage() {
         toast.error("Failed to create account. Please try again.");
         return;
       }
-
-      // Step 3: Create user profile in database
-      await authService.createUserProfile({
-        student_id: data.studentId,
-        firstname: data.firstName,
-        lastname: data.lastName,
-        email: data.email,
-        course_id: courseId,
-        year_id: data.yearLevel,
-        role_id: 1, // Default to student role
-      });
 
       // Success - show message and redirect
       toast.success("Account created successfully! Please check your email to verify your account.");

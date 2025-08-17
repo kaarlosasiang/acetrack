@@ -59,10 +59,10 @@ export function RegisterForm({
       last_name: "Doe",
       email: "johndoe@example.com",
       student_id: "123456",
-      course_id: "1",
+      course_id: 1,
       year_level: 1,
       password: "r@thernotsaY64",
-      confirmPassword: "",
+      confirmPassword: "r@thernotsaY64",
     },
   });
 
@@ -183,7 +183,7 @@ export function RegisterForm({
                       <FormLabel>Course</FormLabel>
                       <Select
                         onValueChange={field.onChange}
-                        defaultValue={field.value}
+                        defaultValue={field.value?.toString()}
                       >
                         <FormControl>
                           <SelectTrigger>

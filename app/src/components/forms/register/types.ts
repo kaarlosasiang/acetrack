@@ -3,7 +3,7 @@ export interface RegisterFormData {
   last_name: string;
   email: string;
   student_id: string;
-  course_id: any;
+  course_id: number;
   year_level: number;
   password: string;
   confirmPassword: string;

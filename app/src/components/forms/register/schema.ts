@@ -26,7 +26,7 @@ export const registerSchema = z
       .regex(/^[0-9-]+$/, "Student ID can only contain numbers and hyphens")
       .min(6, "Student ID must be at least 6 characters"),
 
-    course_id: z.string().min(1, "Course is required"),
+    course_id: z.number().min(1, "Course is required"),
 
     year_level: z
       .number()

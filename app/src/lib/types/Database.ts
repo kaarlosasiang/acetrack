@@ -11,10 +11,10 @@ export interface Database {
       user_profile: {
         Row: {
           student_id: string
-          firstname: string
-          middlename: string | null
-          lastname: string
-          course_id: any
+          first_name: string
+          middle_initial: string | null
+          last_name: string
+          course_id: number | null
           year_level: number
           avatar: string | null
           password: string
