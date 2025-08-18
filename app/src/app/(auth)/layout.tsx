@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AuthRedirect } from "@/components/auth/AuthRedirect";
 
 export const metadata: Metadata = {
   title: "Login", 
@@ -9,5 +10,9 @@ export default function AuthLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return (
+    <AuthRedirect>
+      {children}
+    </AuthRedirect>
+  );
 }

@@ -5,17 +5,11 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
-interface RoleProtectedRouteProps {
+interface AuthRedirectProps {
   children: React.ReactNode;
-  allowedRoles: number[]; // Array of role IDs that can access this route
-  redirectTo?: string; // Optional custom redirect path
 }
 
-export function RoleProtectedRoute({ 
-  children, 
-  allowedRoles, 
-  redirectTo 
-}: RoleProtectedRouteProps) {
+export function AuthRedirect({ children }: AuthRedirectProps) {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [isRedirecting, setIsRedirecting] = useState(false);
@@ -37,35 +31,23 @@ export function RoleProtectedRoute({
 
   useEffect(() => {
     // Only proceed if not loading and not already redirecting
-    if (!loading && !isRedirecting) {
-      if (!user) {
-        // User not logged in, redirect to login
-        setIsRedirecting(true);
-        router.push("/login");
-        return;
-      }
-
+    if (!loading && !isRedirecting && user) {
+      // User is authenticated, redirect to appropriate dashboard
+      setIsRedirecting(true);
+      
       const userRoleId = user.role_id;
       
-      if (!allowedRoles.includes(userRoleId)) {
-        // User doesn't have permission for this route
-        setIsRedirecting(true);
-        if (redirectTo) {
-          router.push(redirectTo);
-        } else {
-          // Default redirect based on role
-          if (userRoleId === 0) {
-            router.push("/dashboard"); // Admin dashboard
-          } else if (userRoleId === 1) {
-            router.push("/student-dashboard"); // Student dashboard
-          } 
-          else {
-            router.push("/login"); // Unknown role, go to login
-          }
-        }
+      // Redirect based on role
+      if (userRoleId === 0) {
+        router.push("/dashboard"); // Admin dashboard
+      } else if (userRoleId === 1) {
+        router.push("/student-dashboard"); // Student dashboard
+      } else {
+        // Default redirect for unknown roles
+        router.push("/dashboard");
       }
     }
-  }, [user, loading, router, allowedRoles, redirectTo, isRedirecting]);
+  }, [user, loading, router, isRedirecting]);
 
   // If loading timed out, show error message and provide refresh option
   if (loadingTimeout) {
@@ -99,17 +81,11 @@ export function RoleProtectedRoute({
     );
   }
 
-  // If no user after loading is complete, don't render anything (will redirect)
-  if (!user) {
+  // If user is authenticated, don't render the auth page (will redirect)
+  if (user) {
     return null;
   }
 
-  // Check user role
-  const userRoleId = user.role_id;
-  if (!allowedRoles.includes(userRoleId)) {
-    return null; // Will redirect based on role
-  }
-
-  // User is authenticated and has correct role
+  // User is not authenticated, show the auth page
   return <>{children}</>;
 }

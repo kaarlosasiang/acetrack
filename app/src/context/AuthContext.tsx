@@ -22,7 +22,10 @@ type LoginResponse = {
 
 interface AuthContextType {
   user: User | null;
-  login: (values: { email: string; password: string }) => Promise<LoginResponse>;
+  login: (values: {
+    email: string;
+    password: string;
+  }) => Promise<LoginResponse>;
   logout: () => Promise<void>;
   getUser: () => Promise<SupabaseUser | null>;
   loading: boolean;
@@ -37,47 +40,76 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchUser = useCallback(async () => {
-    setLoading(true);
-    try {
-      const supabaseUser = await authService.getUser();
-      if (supabaseUser) {
-        // Here you should fetch your custom user profile from the user_profile table
-        // For now, let's create a basic mapping based on your schema
-        const userProfile: User = {
-          id: 0, // This should come from your user_profile table
-          student_id: supabaseUser.user_metadata?.student_id || supabaseUser.id,
-          first_name: supabaseUser.user_metadata?.first_name || '',
-          middle_initial: supabaseUser.user_metadata?.middle_initial || null,
-          last_name: supabaseUser.user_metadata?.last_name || '',
-          username: supabaseUser.user_metadata?.username || `${supabaseUser.user_metadata?.first_name || ''}${supabaseUser.user_metadata?.last_name || ''}`.toLowerCase(),
-          course_id: supabaseUser.user_metadata?.course_id || null,
-          year_level: supabaseUser.user_metadata?.year_level || 1,
-          avatar: supabaseUser.user_metadata?.avatar || null,
-          password: '', // Don't store password in context
-          role_id: supabaseUser.user_metadata?.role_id || 1,
-          email: supabaseUser.email || '',
-        };
-        setUser(userProfile);
-      } else {
-        setUser(null);
-      }
-    } catch (error) {
-      console.error('Error fetching user:', error);
-      setUser(null);
-    }
-    setLoading(false);
+  // Helper function to create user profile from Supabase user
+  const createUserProfile = useCallback((supabaseUser: SupabaseUser): User => {
+    return {
+      id: 0, // This should come from your user_profile table
+      student_id: supabaseUser.user_metadata?.student_id || supabaseUser.id,
+      first_name: supabaseUser.user_metadata?.first_name || "",
+      middle_initial: supabaseUser.user_metadata?.middle_initial || null,
+      last_name: supabaseUser.user_metadata?.last_name || "",
+      username:
+        supabaseUser.user_metadata?.username ||
+        `${supabaseUser.user_metadata?.first_name || ""}${
+          supabaseUser.user_metadata?.last_name || ""
+        }`.toLowerCase(),
+      course_id: supabaseUser.user_metadata?.course_id || null,
+      year_level: supabaseUser.user_metadata?.year_level || 1,
+      avatar: supabaseUser.user_metadata?.avatar || null,
+      password: "", // Don't store password in context
+      role_id: supabaseUser.user_metadata?.role_id,
+      email: supabaseUser.email || "",
+    };
   }, []);
 
   useEffect(() => {
-    fetchUser();
+    // Initial user fetch on mount/refresh only
+    const initialFetch = async () => {
+      setLoading(true);
+      try {
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("Authentication timeout")), 10000)
+        );
 
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        await fetchUser();
-      } else if (event === 'SIGNED_OUT') {
+        const userPromise = authService.getUser();
+
+        const supabaseUser = (await Promise.race([
+          userPromise,
+          timeoutPromise,
+        ])) as SupabaseUser | null;
+
+        if (supabaseUser) {
+          const userProfile = createUserProfile(supabaseUser);
+          setUser(userProfile);
+        } else {
+          setUser(null);
+        }
+      } catch (error) {
+        console.error("Error fetching user:", error);
         setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initialFetch();
+
+    // Listen for auth state changes - use session data directly
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      try {
+        if (event === "SIGNED_IN" && session?.user) {
+          // Use session data directly instead of refetching
+          const userProfile = createUserProfile(session.user);
+          setUser(userProfile);
+          setLoading(false);
+        } else if (event === "SIGNED_OUT") {
+          setUser(null);
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error("Auth state change error:", error);
         setLoading(false);
       }
     });
@@ -85,12 +117,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     return () => {
       subscription?.unsubscribe();
     };
-  }, [fetchUser]);
+  }, [createUserProfile]);
 
-  const login = async (values: { email: string; password: string }): Promise<LoginResponse> => {
+  const login = async (values: {
+    email: string;
+    password: string;
+  }): Promise<LoginResponse> => {
     const result = await authService.login(values);
-    // Refetch user data after successful login
-    await fetchUser();
+    // No need to refetch - auth state change handler will update the user
     return result;
   };
 
@@ -119,7 +153,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
