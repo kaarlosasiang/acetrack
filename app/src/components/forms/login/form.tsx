@@ -46,7 +46,9 @@ export function LoginForm({
     setError(null);
     
     try {
-      await login(data);
+      const result = await login(data);
+      console.log(result);
+      localStorage.setItem("user", JSON.stringify(result.user));
       toast.success("Login successful! Welcome back.");
       onSuccess?.();
       router.push("/student-dashboard");

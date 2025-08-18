@@ -30,13 +30,14 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { registerSchema, type RegisterFormData } from "./schema";
+import { registerFormSchema, type RegisterFormData } from "./schema";
+import { type RegisterData } from "./types";
 import { YearLevels } from "@/lib/constants/year-levels";
 import courseService from "@/lib/services/CourseService";
 
 interface RegisterFormProps {
   className?: string;
-  onSubmit?: (data: RegisterFormData) => void | Promise<void>;
+  onSubmit?: (data: RegisterData) => void | Promise<void>;
   isLoading?: boolean;
 }
 
@@ -53,7 +54,7 @@ export function RegisterForm({
   const loading = externalLoading ?? isLoading;
 
   const form = useForm<RegisterFormData>({
-    resolver: zodResolver(registerSchema),
+    resolver: zodResolver(registerFormSchema),
     defaultValues: {
       first_name: "John",
       last_name: "Doe",
@@ -66,8 +67,26 @@ export function RegisterForm({
     },
   });
 
+  // Function to generate username from first and last name
+  const generateUsername = (firstName: string, lastName: string): string => {
+    if (!firstName || !lastName) return "";
+    
+    // Remove spaces and special characters, convert to lowercase
+    const cleanFirstName = firstName.replace(/[^a-zA-Z]/g, '').toLowerCase();
+    const cleanLastName = lastName.replace(/[^a-zA-Z]/g, '').toLowerCase();
+    
+    return `${cleanFirstName}${cleanLastName}`;
+  };
+
   const handleSubmit = async (data: RegisterFormData) => {
-    console.log(data);
+    // Generate username automatically before submitting
+    const generatedUsername = generateUsername(data.first_name, data.last_name);
+    const dataWithUsername: RegisterData = {
+      ...data,
+      username: generatedUsername
+    };
+    
+    console.log(dataWithUsername);
     
     if (onSubmit) {
       // Only set internal loading if no external loading is provided
@@ -75,7 +94,7 @@ export function RegisterForm({
         setIsLoading(true);
       }
       try {
-        await onSubmit(data);
+        await onSubmit(dataWithUsername);
       } finally {
         if (externalLoading === undefined) {
           setIsLoading(false);

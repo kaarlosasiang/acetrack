@@ -7,7 +7,7 @@ const userService = {
    */
   async getProfile(studentId: string): Promise<UserProfile | null> {
     const { data, error } = await supabase
-      .from("user_profile")
+      .from("user_profiles")
       .select("*")
       .eq("student_id", studentId)
       .single();

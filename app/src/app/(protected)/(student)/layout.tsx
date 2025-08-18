@@ -1,7 +1,14 @@
+import StudentNavBar from "@/components/custom/NavBar";
+
 export default function StudentLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <div>{children}</div>;
+  return (
+    <>
+      <StudentNavBar />
+      <div className="container mx-auto">{children}</div>
+    </>
+  );
 }

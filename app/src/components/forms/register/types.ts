@@ -8,3 +8,7 @@ export interface RegisterFormData {
   password: string;
   confirmPassword: string;
 }
+
+export interface RegisterData extends RegisterFormData {
+  username: string;
+}

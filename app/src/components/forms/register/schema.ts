@@ -1,7 +1,8 @@
 import { z } from "zod";
 import { YearLevels } from "@/lib/constants/year-levels";
 
-export const registerSchema = z
+// Schema for form validation (without username)
+export const registerFormSchema = z
   .object({
     first_name: z
       .string()
@@ -51,4 +52,14 @@ export const registerSchema = z
     path: ["confirmPassword"],
   });
 
-export type RegisterFormData = z.infer<typeof registerSchema>;
+// Complete registration schema (with username for final data)
+export const registerSchema = registerFormSchema.extend({
+  username: z
+    .string()
+    .min(3, "Username must be at least 3 characters")
+    .max(30, "Username must not exceed 30 characters")
+    .regex(/^[a-zA-Z0-9._-]+$/, "Username can only contain letters, numbers, dots, underscores, and hyphens"),
+});
+
+export type RegisterFormData = z.infer<typeof registerFormSchema>;
+export type RegisterData = z.infer<typeof registerSchema>;

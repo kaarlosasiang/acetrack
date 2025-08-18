@@ -3,6 +3,7 @@
 import { useAuth } from "@/context/AuthContext";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -14,16 +15,14 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     }
   }, [user, loading, router]);
 
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-gray-900"></div>
-          <p className="mt-2 text-sm text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+//   if (loading) {
+//     return (
+//       <div className="flex min-h-screen items-center justify-center">
+//         <Image src={"/images/acetrack-icon.png"} alt="Loading..." width={50} height={50} />
+//         <Image src={"/images/acetrack-icon.png"} alt="Loading..." width={40} height={40} className="absolute animate-ping"/>
+//       </div>
+//     );
+//   }
 
   if (!user) {
     return null; // Will redirect to login
