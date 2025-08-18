@@ -1,4 +1,5 @@
 import StudentNavBar from "@/components/custom/NavBar";
+import { RoleProtectedRoute } from "@/components/auth/RoleProtectedRoute";
 
 export default function StudentLayout({
   children,
@@ -6,9 +7,11 @@ export default function StudentLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
-      <StudentNavBar />
-      <div className="container mx-auto">{children}</div>
-    </>
+    <RoleProtectedRoute allowedRoles={[1]}> {/* Only allow students (role_id: 1) */}
+      <>
+        <StudentNavBar />
+        <div className="container mx-auto">{children}</div>
+      </>
+    </RoleProtectedRoute>
   );
 }

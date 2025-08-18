@@ -49,9 +49,25 @@ export function LoginForm({
       const result = await login(data);
       console.log(result);
       localStorage.setItem("user", JSON.stringify(result.user));
-      toast.success("Login successful! Welcome back.");
+      
+      // Get role_id from user metadata to determine redirect path
+      const roleId = result.user.user_metadata?.role_id;
+      
+      let redirectPath = "/student-dashboard"; // Default fallback
+      
+      if (roleId === 0) {
+        redirectPath = "/dashboard"; // Admin dashboard
+        toast.success("Login successful! Welcome back, Admin.");
+      } else if (roleId === 1) {
+        redirectPath = "/student-dashboard"; // Student dashboard
+        toast.success("Login successful! Welcome back, Student.");
+      } else {
+        // Handle unknown role - default to student dashboard
+        toast.success("Login successful! Welcome back.");
+      }
+      
       onSuccess?.();
-      router.push("/student-dashboard");
+      router.push(redirectPath);
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : "Login failed. Please try again.";
       setError(errorMessage);
