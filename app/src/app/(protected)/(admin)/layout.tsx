@@ -7,10 +7,12 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <RoleProtectedRoute allowedRoles={[0]}> {/* Only allow admin (role_id: 0) */}
+    <RoleProtectedRoute allowedRoles={[0]}>
+      {" "}
+      {/* Only allow admin (role_id: 0) */}
       <>
         <StudentNavBar /> {/* TODO: Create AdminNavBar component */}
-        <div className="container mx-auto">{children}</div>
+        <div className=" max-w-5xl mx-auto py-5">{children}</div>
       </>
     </RoleProtectedRoute>
   );
