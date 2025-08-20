@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -79,37 +80,37 @@
 }
 
 .dark {
-  --background: oklch(0.141 0.005 285.823);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.21 0.006 285.885);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.21 0.006 285.885);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.92 0.004 286.32);
-  --primary-foreground: oklch(0.21 0.006 285.885);
-  --secondary: oklch(0.274 0.006 286.033);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.274 0.006 286.033);
-  --muted-foreground: oklch(0.705 0.015 286.067);
-  --accent: oklch(0.274 0.006 286.033);
-  --accent-foreground: oklch(0.985 0 0);
+  --background: #181a1f;
+  --foreground: #ffffff;
+  --card: #1f2126;
+  --card-foreground: #ffffff;
+  --popover: #1f2126;
+  --popover-foreground: #ffffff;
+  --primary: oklch(75% 0.183 55.934);
+  --primary-foreground: #181a1f;
+  --secondary: #2a2d33;
+  --secondary-foreground: #ffffff;
+  --muted: #2a2d33;
+  --muted-foreground: #a1a1aa;
+  --accent: #2a2d33;
+  --accent-foreground: #ffffff;
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.552 0.016 285.938);
+  --border: #3f4349;
+  --input: #3f4349;
+  --ring: #a1a1aa;
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.21 0.006 285.885);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.274 0.006 286.033);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.552 0.016 285.938);
+  --sidebar: #1f2126;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: oklch(75% 0.183 55.934);
+  --sidebar-primary-foreground: #181a1f;
+  --sidebar-accent: #2a2d33;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #3f4349;
+  --sidebar-ring: #a1a1aa;
 }
 
 @layer base {
@@ -119,4 +120,8 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+body{
+  font-family: "Urbanist", sans-serif;
 }

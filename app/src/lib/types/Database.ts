@@ -53,6 +53,7 @@ export interface Database {
           id: number
           name: string
           description: string | null
+          location: string
           banner: string | null
           status: number
           start_datetime: string
@@ -62,6 +63,7 @@ export interface Database {
           id?: number
           name: string
           description?: string | null
+          location: string
           banner?: string | null
           status: number
           start_datetime: string
@@ -71,6 +73,7 @@ export interface Database {
           id?: number
           name?: string
           description?: string | null
+          location?: string
           banner?: string | null
           status?: number
           start_datetime?: string
