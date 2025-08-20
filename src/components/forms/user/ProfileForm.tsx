@@ -19,7 +19,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { AvatarUpload } from '@/components/avatar';
+import { AvatarUpload } from '@/components/custom/avatar';
 
 import userService from '@/lib/services/UserService';
 import type { UserProfile } from '@/lib/types/Database';
