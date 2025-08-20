@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import type { Database } from "../types/Database";
+import type { Database } from "@/lib/types/Database";
 
 // Simple Supabase client - just need URL and key from environment
 const supabase = createClient<Database>(
