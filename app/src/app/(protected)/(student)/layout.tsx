@@ -13,7 +13,7 @@ export default function StudentLayout({
       {/* Only allow students (role_id: 1) */}
       <>
         <StudentNavBar />
-        <div className="container mx-auto">{children}</div>
+        <div className="container mx-auto py-5">{children}</div>
         <TabBar />
       </>
     </RoleProtectedRoute>

@@ -48,13 +48,13 @@ export default function StudentNavBar() {
   ];
 
   return (
-    <nav className="w-full p-4 border-b">
+    <nav className="w-full py-3 border-b">
       <Container>
         <div className="flex justify-between items-center">
           <Image
             src={"/images/acetrack-logo.png"}
-            width={150}
-            height={21}
+            width={120}
+            height={14}
             alt="AceTrack Logo"
           />
 
