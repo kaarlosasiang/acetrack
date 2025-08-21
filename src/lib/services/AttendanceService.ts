@@ -203,7 +203,7 @@ export class AttendanceService {
         firstname: parsed.firstname,
         middlename: parsed.middlename,
         lastname: parsed.lastname,
-        course_id: parseInt(parsed.course_id),
+        course_id: typeof parsed.course_id === 'number' ? parsed.course_id : parseInt(parsed.course_id),
         year_level: parsed.year_level,
         avatar: parsed.avatar
       };

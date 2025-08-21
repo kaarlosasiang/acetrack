@@ -8,8 +8,6 @@ export default function AdminLayout({
 }) {
   return (
     <RoleProtectedRoute allowedRoles={[0]}>
-      {" "}
-      {/* Only allow admin (role_id: 0) */}
       <>
         <StudentNavBar /> {/* TODO: Create AdminNavBar component */}
         <div className=" max-w-5xl mx-auto py-5">{children}</div>
