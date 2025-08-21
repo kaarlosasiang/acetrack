@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Download, Expand, QrCode } from "lucide-react";
+import { Download, Expand } from "lucide-react";
 import html2canvas from "html2canvas";
 import IDCard from "./IDCard";
 import QRCodeGenerator from "@/components/custom/QRCodeGenerator";
@@ -75,7 +75,6 @@ export default function MyQRPage() {
     try {
       // Wait for all images and QR code to fully load
       const images = idCardRef.current.querySelectorAll("img");
-      const canvases = idCardRef.current.querySelectorAll("canvas");
 
       // Wait for all images to load
       await Promise.all([
@@ -117,6 +116,7 @@ export default function MyQRPage() {
             canvas.style.display = "block";
           });
         },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
 
       const link = document.createElement("a");
@@ -135,6 +135,7 @@ export default function MyQRPage() {
           allowTaint: true,
           foreignObjectRendering: false,
           backgroundColor: "#ffffff",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any);
 
         const link = document.createElement("a");
@@ -146,32 +147,6 @@ export default function MyQRPage() {
           "Failed to download ID card. Please try again or contact support."
         );
         console.error("Fallback also failed:", fallbackError);
-      }
-    }
-  };
-
-  const handleDownloadQR = () => {
-    // Create a temporary canvas to generate a downloadable QR image
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    if (ctx) {
-      canvas.width = 300;
-      canvas.height = 300;
-      ctx.fillStyle = "white";
-      ctx.fillRect(0, 0, 300, 300);
-
-      // Find the QR code canvas in the dialog and copy it
-      const qrCanvas = document.querySelector(
-        "dialog canvas"
-      ) as HTMLCanvasElement;
-      if (qrCanvas) {
-        ctx.drawImage(qrCanvas, 0, 0);
-
-        // Download the image
-        const link = document.createElement("a");
-        link.download = `qr-code-${studentData.studentId}.png`;
-        link.href = canvas.toDataURL();
-        link.click();
       }
     }
   };
@@ -230,8 +205,8 @@ export default function MyQRPage() {
 
       <div className="text-center text-sm text-muted-foreground max-w-md">
         <p>
-          Use the QR code for attendance verification. Click "Enlarge QR Code"
-          for better scanning or "Download ID Card" to save your complete
+          Use the QR code for attendance verification. Click &ldquo;Enlarge QR Code&rdquo;
+          for better scanning or &ldquo;Download ID Card&rdquo; to save your complete
           student ID.
         </p>
       </div>
