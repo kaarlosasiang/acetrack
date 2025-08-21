@@ -199,7 +199,9 @@ export function RegisterForm({
                     <FormItem className="space-y-2">
                       <FormLabel>Course</FormLabel>
                       <Select
-                        onValueChange={field.onChange}
+                        onValueChange={(value) =>
+                          field.onChange(parseInt(value))
+                        }
                       >
                         <FormControl>
                           <SelectTrigger className="!w-full">
