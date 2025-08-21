@@ -63,7 +63,15 @@ export default function MyQRPage() {
     studentId: user.student_id,
     course: courseName || "Loading...",
     profileImage: userService.getAvatarUrl(user),
-    qrCodeData: `https://acetrack.app/verify/${user.student_id}`,
+    qrCodeData: JSON.stringify({
+      student_id: user.student_id,
+      firstname: user.first_name,
+      middlename: user.middle_initial || undefined,
+      lastname: user.last_name,
+      course_id: user.course_id,
+      year_level: user.year_level,
+      avatar: userService.getAvatarUrl(user)
+    }),
   };
 
   console.log("Course name from user:", courseName);

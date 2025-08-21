@@ -43,7 +43,7 @@ export function StudentQRGenerator() {
         firstname: updatedData.firstname,
         middlename: updatedData.middlename || undefined,
         lastname: updatedData.lastname,
-        course_id: updatedData.course_id,
+        course_id: parseInt(updatedData.course_id),
         year_level: updatedData.year_level,
         avatar: updatedData.avatar || undefined
       });
