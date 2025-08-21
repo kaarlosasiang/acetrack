@@ -50,7 +50,7 @@ export function RegisterForm({
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [courses, setCourses] = useState<
-    { id: number; course_name: string }[] | undefined
+    { id: number; course_name: string, short:string }[] | undefined
   >();
   // Use external loading state if provided, otherwise use internal state
   const loading = externalLoading ?? isLoading;
@@ -58,14 +58,10 @@ export function RegisterForm({
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerFormSchema),
     defaultValues: {
-      first_name: "John",
-      last_name: "Doe",
-      email: "johndoe@example.com",
-      student_id: "123456",
-      course_id: 1,
-      year_level: 1,
-      password: "r@thernotsaY64",
-      confirmPassword: "r@thernotsaY64",
+      first_name: "",
+      last_name: "",
+      email: "",
+      student_id: "",
     },
   });
 
@@ -204,7 +200,6 @@ export function RegisterForm({
                       <FormLabel>Course</FormLabel>
                       <Select
                         onValueChange={field.onChange}
-                        defaultValue={field.value?.toString()}
                       >
                         <FormControl>
                           <SelectTrigger className="!w-full">
@@ -218,7 +213,7 @@ export function RegisterForm({
                                 key={course.id}
                                 value={course.id.toString()}
                               >
-                                {course.course_name}
+                                {course.short}
                               </SelectItem>
                             ))}
                         </SelectContent>
@@ -237,7 +232,6 @@ export function RegisterForm({
                         onValueChange={(value) =>
                           field.onChange(parseInt(value))
                         }
-                        defaultValue={field.value.toString()}
                       >
                         <FormControl>
                           <SelectTrigger>
