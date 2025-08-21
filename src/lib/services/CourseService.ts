@@ -80,7 +80,10 @@ const courseService = {
     if (error) {
       // If course doesn't exist, create it
       if (error.code === "PGRST116") {
-        const newCourse = await this.createCourse({ course_name: courseName });
+        const newCourse = await this.createCourse({ 
+          course_name: courseName, 
+          short: courseValue 
+        });
         return newCourse.id;
       }
       throw error;
