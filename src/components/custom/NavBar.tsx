@@ -49,7 +49,7 @@ export default function StudentNavBar() {
 
   return (
     <nav className="w-full py-3 border-b">
-      <Container>
+      <Container className="px-5 sm:px-0">
         <div className="flex justify-between items-center">
           <Image
             src={"/images/acetrack-logo.png"}
@@ -67,7 +67,7 @@ export default function StudentNavBar() {
               // Show login/signup buttons when user is not authenticated
               <>
                 <Button
-                  className="bg-primary/60 text-xs border border-orange-400 text-orange-800"
+                  className="bg-primary/60 text-xs border border-orange-400 text-orange-800 dark:text-white"
                   onClick={() => handleNavigate("/login")}
                 >
                   Log In

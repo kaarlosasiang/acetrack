@@ -124,8 +124,8 @@ export function ForgotPasswordForm({ className, onSubmit }: ForgotPasswordFormPr
                 )}
               />
 
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Sending Reset Link..." : "Send Reset Link"}
+              <Button type="submit" size={"lg"} className="w-full" disabled={isLoading}>
+                <span className="font-semibold">{isLoading ? "Sending Reset Link..." : "Send Reset Link"}</span>
               </Button>
 
               <div className="text-center">

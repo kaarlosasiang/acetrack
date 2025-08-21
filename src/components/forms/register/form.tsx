@@ -49,7 +49,9 @@ export function RegisterForm({
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [courses, setCourses] = useState<{ id: number; course_name: string }[] | undefined>();
+  const [courses, setCourses] = useState<
+    { id: number; course_name: string }[] | undefined
+  >();
   // Use external loading state if provided, otherwise use internal state
   const loading = externalLoading ?? isLoading;
 
@@ -70,11 +72,11 @@ export function RegisterForm({
   // Function to generate username from first and last name
   const generateUsername = (firstName: string, lastName: string): string => {
     if (!firstName || !lastName) return "";
-    
+
     // Remove spaces and special characters, convert to lowercase
-    const cleanFirstName = firstName.replace(/[^a-zA-Z]/g, '').toLowerCase();
-    const cleanLastName = lastName.replace(/[^a-zA-Z]/g, '').toLowerCase();
-    
+    const cleanFirstName = firstName.replace(/[^a-zA-Z]/g, "").toLowerCase();
+    const cleanLastName = lastName.replace(/[^a-zA-Z]/g, "").toLowerCase();
+
     return `${cleanFirstName}${cleanLastName}`;
   };
 
@@ -83,11 +85,11 @@ export function RegisterForm({
     const generatedUsername = generateUsername(data.first_name, data.last_name);
     const dataWithUsername: RegisterData = {
       ...data,
-      username: generatedUsername
+      username: generatedUsername,
     };
-    
+
     console.log(dataWithUsername);
-    
+
     if (onSubmit) {
       // Only set internal loading if no external loading is provided
       if (externalLoading === undefined) {
@@ -107,7 +109,7 @@ export function RegisterForm({
     const fetchCourses = async () => {
       const courses = await courseService.getCourses();
       console.log(courses);
-      
+
       setCourses(courses);
     };
     fetchCourses();
@@ -198,21 +200,24 @@ export function RegisterForm({
                   control={form.control}
                   name="course_id"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="space-y-2">
                       <FormLabel>Course</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         defaultValue={field.value?.toString()}
                       >
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="!w-full">
                             <SelectValue placeholder="Select your course" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           {courses &&
                             courses.map((course) => (
-                              <SelectItem key={course.id} value={course.id.toString()}>
+                              <SelectItem
+                                key={course.id}
+                                value={course.id.toString()}
+                              >
                                 {course.course_name}
                               </SelectItem>
                             ))}
@@ -226,7 +231,7 @@ export function RegisterForm({
                   control={form.control}
                   name="year_level"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="space-y-2">
                       <FormLabel>Year Level</FormLabel>
                       <Select
                         onValueChange={(value) =>
@@ -235,7 +240,7 @@ export function RegisterForm({
                         defaultValue={field.value.toString()}
                       >
                         <FormControl>
-                          <SelectTrigger className="w-full">
+                          <SelectTrigger>
                             <SelectValue placeholder="Select year level" />
                           </SelectTrigger>
                         </FormControl>
@@ -326,8 +331,15 @@ export function RegisterForm({
               />
 
               {/* Submit Button */}
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Creating Account..." : "Create Account"}
+              <Button
+                type="submit"
+                size={"lg"}
+                className="w-full"
+                disabled={loading}
+              >
+                <span className="font-semibold">
+                  {loading ? "Creating Account..." : "Create Account"}
+                </span>
               </Button>
 
               {/* Login Link */}

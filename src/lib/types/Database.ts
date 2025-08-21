@@ -125,14 +125,17 @@ export interface Database {
         Row: {
           id: number
           course_name: string
+          short: string
         }
         Insert: {
           id?: number
           course_name: string
+          short: string
         }
         Update: {
           id?: number
           course_name?: string
+          short?: string
         }
       }
       roles: {

@@ -4,6 +4,47 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Print-safe classes for html2canvas compatibility */
+.print-safe {
+  color: #000000 !important;
+  border-color: #cccccc !important;
+}
+
+.print-safe-text {
+  color: #1f2937 !important;
+}
+
+.print-safe * {
+  box-sizing: border-box !important;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.print-safe img {
+  max-width: 100% !important;
+  height: auto !important;
+  display: block !important;
+  object-fit: contain !important;
+}
+
+.print-safe canvas {
+  max-width: 100% !important;
+  height: auto !important;
+  display: block !important;
+}
+
+.print-safe .bg-white {
+  background-color: #ffffff !important;
+}
+
+.print-safe .rounded-full {
+  border-radius: 50% !important;
+}
+
+.print-safe .rounded-sm {
+  border-radius: 0.125rem !important;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
