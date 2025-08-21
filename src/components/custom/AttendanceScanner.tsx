@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from 'react';
-import { Scanner } from '@yudiel/react-qr-scanner';
+import { Scanner, type IDetectedBarcode } from '@yudiel/react-qr-scanner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -24,7 +24,7 @@ export function AttendanceScanner({ eventId, mode, onAttendanceMarked }: Attenda
   } | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleScan = useCallback(async (detectedCodes: any[]) => {
+  const handleScan = useCallback(async (detectedCodes: IDetectedBarcode[]) => {
     if (detectedCodes.length === 0 || isProcessing) return;
 
     setIsProcessing(true);
@@ -78,7 +78,7 @@ export function AttendanceScanner({ eventId, mode, onAttendanceMarked }: Attenda
     }, 3000);
   }, [eventId, mode, isProcessing, onAttendanceMarked]);
 
-  const handleError = useCallback((error: any) => {
+  const handleError = useCallback((error: unknown) => {
     console.error('Scanner error:', error);
     setScanResult({
       type: 'error',
@@ -192,7 +192,7 @@ export function AttendanceScanner({ eventId, mode, onAttendanceMarked }: Attenda
           <div className="text-sm text-muted-foreground space-y-2">
             <p>📱 <strong>Instructions:</strong></p>
             <ul className="list-disc list-inside space-y-1 ml-4">
-              <li>Click "Start Scanner" to activate the camera</li>
+              <li>Click &quot;Start Scanner&quot; to activate the camera</li>
               <li>Point the camera at a student QR code</li>
               <li>The scanner will automatically detect and process the code</li>
               <li>Ensure good lighting for better scanning accuracy</li>

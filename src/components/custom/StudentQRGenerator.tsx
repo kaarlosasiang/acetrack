@@ -218,7 +218,7 @@ export function StudentQRGenerator() {
               <h4 className="font-semibold mb-2">For Administrators:</h4>
               <ul className="list-disc list-inside space-y-1 text-sm">
                 <li>Fill in student information in the form</li>
-                <li>Click "Download QR Code" to save the image</li>
+                <li>Click &quot;Download QR Code&quot; to save the image</li>
                 <li>Print or share the QR code with the student</li>
                 <li>Each student should have their unique QR code</li>
               </ul>
