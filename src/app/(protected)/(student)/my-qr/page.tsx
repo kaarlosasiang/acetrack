@@ -62,7 +62,7 @@ export default function MyQRPage() {
     } ${user.last_name}`,
     studentId: user.student_id,
     course: courseName || "Loading...",
-    profileImage: userService.getAvatarUrl(user),
+    avatar: user.avatar ?? undefined,
     qrCodeData: JSON.stringify({
       student_id: user.student_id,
       firstname: user.first_name,
@@ -70,12 +70,13 @@ export default function MyQRPage() {
       lastname: user.last_name,
       course_id: user.course_id,
       year_level: user.year_level,
-      avatar: userService.getAvatarUrl(user)
+      avatar: user.avatar
     }),
   };
 
   console.log("Course name from user:", courseName);
   console.log("Generated acronym:", courseName || "No course name");
+  console.log("User:", user);
 
   const handleDownloadIDCard = async () => {
     if (!idCardRef.current) return;
@@ -95,37 +96,167 @@ export default function MyQRPage() {
         }),
         // Wait a bit for QR code canvas to render
         new Promise((resolve) => setTimeout(resolve, 300)),
+        // Preload background image used by the ID card
+        new Promise((resolve) => {
+          const bg = new Image();
+          bg.crossOrigin = "anonymous";
+          bg.onload = resolve;
+          bg.onerror = resolve;
+          bg.src = new URL("/images/id-bg.png", window.location.origin).toString();
+        }),
+        // Preload all static images used in the ID card
+        new Promise((resolve) => {
+          const acetrackLogo = new Image();
+          acetrackLogo.crossOrigin = "anonymous";
+          acetrackLogo.onload = resolve;
+          acetrackLogo.onerror = resolve;
+          acetrackLogo.src = new URL("/images/acetrack-logo-v2.png", window.location.origin).toString();
+        }),
+        new Promise((resolve) => {
+          const acesLogo = new Image();
+          acesLogo.crossOrigin = "anonymous";
+          acesLogo.onload = resolve;
+          acesLogo.onerror = resolve;
+          acesLogo.src = new URL("/images/aces-logo.jpg", window.location.origin).toString();
+        }),
       ]);
+
+      const rect = idCardRef.current.getBoundingClientRect();
 
       const canvas = await html2canvas(idCardRef.current, {
         useCORS: true,
         allowTaint: true,
         logging: false,
         scale: 2,
-        backgroundColor: null, // Keep transparent to preserve background
-        foreignObjectRendering: true,
+        backgroundColor: "#ffffff",
+        foreignObjectRendering: false,
         imageTimeout: 0,
+        width: Math.ceil(rect.width),
+        height: Math.ceil(rect.height),
         onclone: (clonedDoc: Document) => {
+          // Remove dark mode to avoid OKLCH variables coming from .dark scope
+          clonedDoc.documentElement.classList.remove("dark");
+
+          // Force safe backgrounds on html and body
+          const htmlEl = clonedDoc.documentElement as HTMLElement;
+          const bodyEl = clonedDoc.body as HTMLElement;
+          [htmlEl, bodyEl].forEach((el) => {
+            el.style.background = "transparent";
+            el.style.backgroundColor = "transparent";
+          });
+
+          // Apply safe CSS variable fallbacks to avoid OKLCH parsing
+          const applySafeVars = (el: HTMLElement) => {
+            const safeVars: Record<string, string> = {
+              "--background": "#ffffff",
+              "--foreground": "#111827",
+              "--card": "#ffffff",
+              "--card-foreground": "#111827",
+              "--popover": "#ffffff",
+              "--popover-foreground": "#111827",
+              "--primary": "#ea580c",
+              "--primary-foreground": "#ffffff",
+              "--secondary": "#f3f4f6",
+              "--secondary-foreground": "#111827",
+              "--muted": "#f3f4f6",
+              "--muted-foreground": "#6b7280",
+              "--accent": "#f3f4f6",
+              "--accent-foreground": "#111827",
+              "--destructive": "#dc2626",
+              "--border": "#e5e7eb",
+              "--input": "#e5e7eb",
+              "--ring": "#9ca3af",
+              "--sidebar": "#ffffff",
+              "--sidebar-foreground": "#111827",
+              "--sidebar-primary": "#ea580c",
+              "--sidebar-primary-foreground": "#ffffff",
+              "--sidebar-accent": "#f3f4f6",
+              "--sidebar-accent-foreground": "#111827",
+              "--sidebar-border": "#e5e7eb",
+              "--sidebar-ring": "#9ca3af",
+            };
+            Object.entries(safeVars).forEach(([k, v]) => el.style.setProperty(k, v));
+          };
+
+          applySafeVars(htmlEl);
+          applySafeVars(bodyEl);
+
+          // Ensure the cloned card has explicit dimensions (aspect-ratio can be unreliable)
+          const clonedCard = clonedDoc.querySelector('[data-idcard-root]') as HTMLElement | null;
+          if (clonedCard) {
+            clonedCard.style.width = `${Math.ceil(rect.width)}px`;
+            clonedCard.style.height = `${Math.ceil(rect.height)}px`;
+            clonedCard.style.maxWidth = `${Math.ceil(rect.width)}px`;
+            clonedCard.style.maxHeight = `${Math.ceil(rect.height)}px`;
+            clonedCard.style.transform = "none";
+            // Force absolute background image URL so the renderer can fetch it
+            clonedCard.style.backgroundImage = `url(${new URL("/images/id-bg.png", (clonedDoc.defaultView?.location?.origin ?? window.location.origin)).toString()})`;
+            clonedCard.style.backgroundSize = "cover";
+            clonedCard.style.backgroundPosition = "center";
+            clonedCard.style.backgroundRepeat = "no-repeat";
+
+            // Sanitize descendant colors to avoid unsupported OKLCH values rendering as transparent
+            const win = clonedDoc.defaultView;
+            const elements = clonedCard.querySelectorAll("*");
+            elements.forEach((el) => {
+              const element = el as HTMLElement;
+              if (!win) return;
+              const cs = win.getComputedStyle(element);
+              const fixColor = (v: string | null, fallback: string) => {
+                if (!v) return fallback;
+                return v.includes("oklch") ? fallback : v;
+              };
+              const safeText = fixColor(cs.color, "#111827");
+              const safeBg = fixColor(cs.backgroundColor, "transparent");
+              const safeBorder = fixColor(cs.borderColor, "#e5e7eb");
+              element.style.color = safeText;
+              if (safeBg !== "rgba(0, 0, 0, 0)" && safeBg !== "transparent") {
+                element.style.backgroundColor = safeBg;
+              }
+              element.style.borderColor = safeBorder;
+            });
+          }
+
           // Fix image rendering in cloned document
           const clonedImages = clonedDoc.querySelectorAll("img");
           clonedImages.forEach((img) => {
-            img.style.maxWidth = "100%";
-            img.style.height = "auto";
-            img.style.display = "block";
+            const imgElement = img as HTMLImageElement;
+            imgElement.style.maxWidth = "100%";
+            imgElement.style.height = "auto";
+            imgElement.style.display = "block";
+            imgElement.style.visibility = "visible";
+            imgElement.style.opacity = "1";
             // Force crossOrigin for better compatibility
-            img.crossOrigin = "anonymous";
+            imgElement.crossOrigin = "anonymous";
+            
+            // Force absolute URLs for images to ensure they load in the clone
+            if (imgElement.src.includes("/images/acetrack-logo-v2.png")) {
+              imgElement.src = new URL("/images/acetrack-logo-v2.png", (clonedDoc.defaultView?.location?.origin ?? window.location.origin)).toString();
+            } else if (imgElement.src.includes("/images/aces-logo.jpg")) {
+              imgElement.src = new URL("/images/aces-logo.jpg", (clonedDoc.defaultView?.location?.origin ?? window.location.origin)).toString();
+            } else if (imgElement.src.includes("data:") || imgElement.src.includes("blob:")) {
+              // Keep data URLs and blob URLs as is
+            } else {
+              // For user avatar, ensure it's loaded
+              if (imgElement.alt === "Student Photo" && studentData.avatar) {
+                imgElement.src = studentData.avatar;
+              }
+            }
           });
 
           // Fix canvas (QR code) rendering
           const clonedCanvases = clonedDoc.querySelectorAll("canvas");
           clonedCanvases.forEach((canvas) => {
-            canvas.style.maxWidth = "100%";
-            canvas.style.height = "auto";
-            canvas.style.display = "block";
+            (canvas as HTMLCanvasElement).style.maxWidth = "100%";
+            (canvas as HTMLCanvasElement).style.height = "auto";
+            (canvas as HTMLCanvasElement).style.display = "block";
           });
         },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
+
+      // Give images in the cloned document time to load
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       const link = document.createElement("a");
       link.download = `student-id-card-${studentData.studentId}.png`;

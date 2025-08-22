@@ -6,9 +6,23 @@ const userService = {
   /**
    * Get user profile by student ID
    */
-  async getProfile(studentId: string): Promise<UserProfile | null> {
+  async getProfile(userId: string): Promise<UserProfile | null> {
     const { data, error } = await supabase
-      .from("user_profile")
+      .from("user_profiles")
+      .select("*")
+      .eq("id", userId)
+      .single();
+
+    if (error && error.code !== "PGRST116") throw error;
+    return data;
+  },
+
+  /**
+   * Get user profile by student ID (alternative method)
+   */
+  async getProfileByStudentId(studentId: string): Promise<UserProfile | null> {
+    const { data, error } = await supabase
+      .from("user_profiles")
       .select("*")
       .eq("student_id", studentId)
       .single();
@@ -22,7 +36,7 @@ const userService = {
    */
   async updateProfile(studentId: string, updates: Partial<UserProfile>) {
     const { data, error } = await supabase
-      .from("user_profile")
+      .from("user_profiles")
       .update(updates)
       .eq("student_id", studentId)
       .select()
@@ -108,9 +122,9 @@ const userService = {
   async getUsers(filters?: {
     role_id?: number;
     course_id?: number;
-    year_id?: number;
+    year_level?: number;
   }) {
-    let query = supabase.from("user_profile").select(`
+    let query = supabase.from("user_profiles").select(`
       *,
       course:courses(course_name),
       role:roles(type)
@@ -122,11 +136,11 @@ const userService = {
     if (filters?.course_id) {
       query = query.eq("course_id", filters.course_id);
     }
-    if (filters?.year_id) {
-      query = query.eq("year_id", filters.year_id);
+    if (filters?.year_level) {
+      query = query.eq("year_level", filters.year_level);
     }
 
-    const { data, error } = await query.order("full_name");
+    const { data, error } = await query.order("first_name");
     if (error) throw error;
     return data;
   },

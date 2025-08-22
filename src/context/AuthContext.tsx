@@ -1,4 +1,5 @@
 import authService from "@/lib/services/AuthService";
+import userService from "@/lib/services/UserService";
 import { supabase } from "@/lib/config/supabase";
 import {
   createContext,
@@ -40,26 +41,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Helper function to create user profile from Supabase user
-  const createUserProfile = useCallback((supabaseUser: SupabaseUser): User => {
-    return {
-      id: 0, // This should come from your user_profile table
-      student_id: supabaseUser.user_metadata?.student_id || supabaseUser.id,
-      first_name: supabaseUser.user_metadata?.first_name || "",
-      middle_initial: supabaseUser.user_metadata?.middle_initial || null,
-      last_name: supabaseUser.user_metadata?.last_name || "",
-      username:
-        supabaseUser.user_metadata?.username ||
-        `${supabaseUser.user_metadata?.first_name || ""}${
-          supabaseUser.user_metadata?.last_name || ""
-        }`.toLowerCase(),
-      course_id: supabaseUser.user_metadata?.course_id || null,
-      year_level: supabaseUser.user_metadata?.year_level || 1,
-      avatar: supabaseUser.user_metadata?.avatar || null,
-      password: "", // Don't store password in context
-      role_id: supabaseUser.user_metadata?.role_id,
-      email: supabaseUser.email || "",
-    };
+  // Helper function to merge Supabase user data with database profile data
+  const mergeUserData = useCallback((supabaseUser: SupabaseUser, dbProfile: User | null): User => {
+    if (dbProfile) {
+      // Combine database profile with Supabase auth data (email)
+      return {
+        ...dbProfile,
+        email: supabaseUser.email || "",
+        password: "", // Don't store password in context
+      };
+    } else {
+      // Fallback to metadata if no database profile exists
+      return {
+        id: 0,
+        student_id: supabaseUser.user_metadata?.student_id || supabaseUser.id,
+        first_name: supabaseUser.user_metadata?.first_name || "",
+        middle_initial: supabaseUser.user_metadata?.middle_initial || null,
+        last_name: supabaseUser.user_metadata?.last_name || "",
+        username:
+          supabaseUser.user_metadata?.username ||
+          `${supabaseUser.user_metadata?.first_name || ""}${
+            supabaseUser.user_metadata?.last_name || ""
+          }`.toLowerCase(),
+        course_id: supabaseUser.user_metadata?.course_id || null,
+        year_level: supabaseUser.user_metadata?.year_level || 1,
+        avatar: supabaseUser.user_metadata?.avatar || null,
+        password: "", // Don't store password in context
+        role_id: supabaseUser.user_metadata?.role_id,
+        email: supabaseUser.email || "",
+      };
+    }
   }, []);
 
   useEffect(() => {
@@ -79,8 +90,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         ])) as SupabaseUser | null;
 
         if (supabaseUser) {
-          const userProfile = createUserProfile(supabaseUser);
-          setUser(userProfile);
+          try {
+            // Try to fetch the actual user profile from the database
+            const dbUserProfile = await userService.getProfile(supabaseUser.id);
+            console.log(dbUserProfile);
+            
+            // Merge database profile with Supabase auth data
+            const mergedUser = mergeUserData(supabaseUser, dbUserProfile);
+            setUser(mergedUser);
+          } catch (error) {
+            console.warn('Failed to fetch user profile from database, using metadata:', error);
+            // Fallback to metadata if database fetch fails
+            const userProfile = mergeUserData(supabaseUser, null);
+            setUser(userProfile);
+          }
         } else {
           setUser(null);
         }
@@ -100,9 +123,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       try {
         if (event === "SIGNED_IN" && session?.user) {
-          // Use session data directly instead of refetching
-          const userProfile = createUserProfile(session.user);
-          setUser(userProfile);
+          try {
+            // Try to fetch the actual user profile from the database
+            const dbUserProfile = await userService.getProfileByStudentId(session.user.id);
+            // Merge database profile with Supabase auth data
+            const mergedUser = mergeUserData(session.user, dbUserProfile);
+            setUser(mergedUser);
+          } catch (error) {
+            console.warn('Failed to fetch user profile from database, using metadata:', error);
+            // Fallback to metadata if database fetch fails
+            const userProfile = mergeUserData(session.user, null);
+            setUser(userProfile);
+          }
           setLoading(false);
         } else if (event === "SIGNED_OUT") {
           setUser(null);
@@ -117,7 +149,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     return () => {
       subscription?.unsubscribe();
     };
-  }, [createUserProfile]);
+  }, [mergeUserData]);
 
   const login = async (values: {
     email: string;
