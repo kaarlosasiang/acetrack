@@ -201,7 +201,15 @@ const EventsList = () => {
               <p className="text-sm text-muted-foreground line-clamp-2">
                 {event.description || "No description available"}
               </p>
-              <img src={event.banner} alt={event.name} />
+              {event.banner && (
+                <Image 
+                  src={event.banner} 
+                  alt={event.name} 
+                  width={300}
+                  height={200}
+                  className="rounded-md object-cover"
+                />
+              )}
             </div>
             <div className="flex flex-col items-end gap-1 ml-4">
               <Badge
