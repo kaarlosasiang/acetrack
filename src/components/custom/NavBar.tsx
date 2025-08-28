@@ -49,7 +49,7 @@ export default function StudentNavBar() {
 
   return (
     <nav className="w-full py-3 border-b">
-      <Container className="px-5 sm:px-0">
+      <Container className="px-5 max-w-5xl sm:px-0">
         <div className="flex justify-between items-center">
           <Image
             src={"/images/acetrack-logo.png"}
@@ -95,7 +95,7 @@ export default function StudentNavBar() {
                 <DropdownMenuTrigger>
                   <Avatar>
                     <AvatarImage
-                      src={user?.avatar || "https://github.com/shadcn.png"}
+                      src={user?.avatar || ""}
                     />
                     <AvatarFallback>
                       {user?.first_name?.charAt(0)}

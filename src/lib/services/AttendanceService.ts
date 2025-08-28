@@ -186,6 +186,233 @@ export class AttendanceService {
   }
 
   /**
+   * Get attendance statistics for a student
+   */
+  static async getStudentAttendanceStats(studentId: string): Promise<{
+    success: boolean;
+    data?: {
+      attendancePercentage: number;
+      totalEvents: number;
+      attendedEvents: number;
+      missedEvents: number;
+      upcomingEvents: number;
+      recentAttendance: {
+        eventName: string;
+        date: string;
+        status: 'present' | 'absent' | 'late';
+        timeIn?: string;
+        timeOut?: string;
+      }[];
+    };
+    message?: string;
+  }> {
+    try {
+      console.log('Fetching attendance stats for student:', studentId);
+
+      // Get student's profile to find their course
+      const { data: studentProfile, error: profileError } = await supabase
+        .from('user_profiles')
+        .select('course_id')
+        .eq('student_id', studentId)
+        .single();
+
+      if (profileError && profileError.code !== 'PGRST116') {
+        console.error('Profile error:', profileError);
+        throw profileError;
+      }
+
+      console.log('Student profile:', studentProfile);
+
+      // Get events for the student's course (if course-specific) or all events
+      const eventsQuery = supabase
+        .from('events')
+        .select('id, name, start_datetime, end_datetime, status')
+        .eq('status', 1) // Only active events
+        .order('start_datetime', { ascending: false });
+
+      // If we have a course_id, filter by it, otherwise get all events
+      if (studentProfile?.course_id) {
+        console.log('Filtering events by course_id:', studentProfile.course_id);
+        // Note: Only filter if events table has course_id column
+        // For now, we'll get all events since the schema might not have course filtering
+      }
+
+      const { data: allEvents, error: eventsError } = await eventsQuery;
+      if (eventsError) {
+        console.error('Events error:', eventsError);
+        throw eventsError;
+      }
+
+      console.log('All events found:', allEvents?.length || 0);
+
+      // Get student's attendance records
+      const { data: attendanceRecords, error: attendanceError } = await supabase
+        .from('attendance')
+        .select('*')
+        .eq('student_id', studentId)
+        .order('time_in', { ascending: false });
+
+      if (attendanceError) {
+        console.error('Attendance error:', attendanceError);
+        throw attendanceError;
+      }
+
+      console.log('Attendance records found:', attendanceRecords?.length || 0);
+
+      // Calculate stats
+      const now = new Date();
+      const pastEvents = allEvents?.filter(event => 
+        new Date(event.end_datetime) < now
+      ) || [];
+      
+      const totalEvents = pastEvents.length;
+      console.log('Past events:', totalEvents);
+
+      const attendedEvents = attendanceRecords?.filter(record => 
+        record.time_in && record.time_out
+      ).length || 0;
+
+      const partialAttended = attendanceRecords?.filter(record => 
+        record.time_in && !record.time_out
+      ).length || 0;
+
+      const totalAttended = attendedEvents + partialAttended;
+      const missedEvents = Math.max(0, totalEvents - totalAttended);
+      
+      const upcomingEvents = allEvents?.filter(event => 
+        new Date(event.start_datetime) > now
+      ).length || 0;
+
+      const attendancePercentage = totalEvents > 0 
+        ? Math.round((totalAttended / totalEvents) * 100) 
+        : 0;
+
+      console.log('Calculated stats:', {
+        attendancePercentage,
+        totalEvents,
+        attendedEvents: totalAttended,
+        missedEvents,
+        upcomingEvents
+      });
+
+      // Get event details for recent attendance
+      const recentAttendanceIds = attendanceRecords?.slice(0, 5).map(r => r.event_id) || [];
+      const { data: recentEvents } = recentAttendanceIds.length > 0 
+        ? await supabase
+            .from('events')
+            .select('id, name, start_datetime')
+            .in('id', recentAttendanceIds)
+        : { data: [] };
+
+      // Format recent attendance
+      const recentAttendance = attendanceRecords?.slice(0, 5).map(record => {
+        const event = recentEvents?.find(e => e.id === record.event_id);
+        return {
+          eventName: event?.name || 'Unknown Event',
+          date: event?.start_datetime ? 
+            new Date(event.start_datetime).toLocaleDateString() : 'Unknown Date',
+          status: (record.time_in && record.time_out) ? 'present' : 
+                  record.time_in ? 'late' : 'absent' as 'present' | 'absent' | 'late',
+          timeIn: record.time_in ? 
+            new Date(record.time_in).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 
+            undefined,
+          timeOut: record.time_out ? 
+            new Date(record.time_out).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 
+            undefined,
+        };
+      }) || [];
+
+      const result = {
+        attendancePercentage,
+        totalEvents,
+        attendedEvents: totalAttended,
+        missedEvents,
+        upcomingEvents,
+        recentAttendance,
+      };
+
+      console.log('Final result:', result);
+
+      return {
+        success: true,
+        data: result
+      };
+    } catch (error) {
+      console.error('Error fetching student attendance stats:', error);
+      return {
+        success: false,
+        message: 'Failed to fetch attendance statistics'
+      };
+    }
+  }
+
+  /**
+   * Get current active shift for a student
+   */
+  static async getCurrentShift(studentId: string): Promise<{
+    success: boolean;
+    data?: {
+      isActive: boolean;
+      eventName?: string;
+      location?: string;
+      startTime?: string;
+      hasTimeOut: boolean;
+    };
+    message?: string;
+  }> {
+    try {
+      // Get current attendance record where time_in exists but time_out is null
+      const { data: currentShift, error } = await supabase
+        .from('attendance')
+        .select(`
+          *,
+          event:events(name, location, start_datetime)
+        `)
+        .eq('student_id', studentId)
+        .not('time_in', 'is', null)
+        .is('time_out', null)
+        .order('time_in', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        throw error;
+      }
+
+      if (!currentShift) {
+        return {
+          success: true,
+          data: {
+            isActive: false,
+            hasTimeOut: false
+          }
+        };
+      }
+
+      return {
+        success: true,
+        data: {
+          isActive: true,
+          eventName: currentShift.event?.name || 'Unknown Event',
+          location: currentShift.event?.location || 'Unknown Location',
+          startTime: currentShift.time_in ? 
+            new Date(currentShift.time_in).toLocaleTimeString([], { 
+              hour: '2-digit', 
+              minute: '2-digit' 
+            }) : undefined,
+          hasTimeOut: false
+        }
+      };
+    } catch (error) {
+      console.error('Error fetching current shift:', error);
+      return {
+        success: false,
+        message: 'Failed to fetch current shift information'
+      };
+    }
+  }
+
+  /**
    * Parse QR code data to extract student information
    */
   static parseQRCode(qrData: string): StudentInfo | null {

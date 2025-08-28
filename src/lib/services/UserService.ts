@@ -8,7 +8,7 @@ const userService = {
    */
   async getProfile(userId: string): Promise<UserProfile | null> {
     const { data, error } = await supabase
-      .from("user_profiles")
+      .from("user_profile")
       .select("*")
       .eq("id", userId)
       .single();
@@ -22,7 +22,7 @@ const userService = {
    */
   async getProfileByStudentId(studentId: string): Promise<UserProfile | null> {
     const { data, error } = await supabase
-      .from("user_profiles")
+      .from("user_profile")
       .select("*")
       .eq("student_id", studentId)
       .single();
@@ -36,7 +36,7 @@ const userService = {
    */
   async updateProfile(studentId: string, updates: Partial<UserProfile>) {
     const { data, error } = await supabase
-      .from("user_profiles")
+      .from("user_profile")
       .update(updates)
       .eq("student_id", studentId)
       .select()
@@ -124,7 +124,7 @@ const userService = {
     course_id?: number;
     year_level?: number;
   }) {
-    let query = supabase.from("user_profiles").select(`
+    let query = supabase.from("user_profile").select(`
       *,
       course:courses(course_name),
       role:roles(type)
