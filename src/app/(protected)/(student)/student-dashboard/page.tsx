@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import AttendanceChart from "@/components/custom/AttendanceChart";
-import StudentCalendar from "@/components/custom/StudentCalendar";
 import EventsList from "@/components/custom/EventsList";
+import DorsuNewsDisplay from "@/components/custom/DorsuNewsDisplay";
 
 export default function StudentDashboard() {
   const pathname = usePathname();
@@ -42,10 +42,16 @@ export default function StudentDashboard() {
           </div>
         </div>
         
-        {/* Right column - Calendar (Full calendar on desktop, week view on mobile) */}
+        {/* Right column - Latest DOrSU News */}
         <div className="lg:col-span-4 order-1 lg:order-2">
           <div className="rounded-xl sm:rounded-2xl border p-4 sm:p-5 backdrop-blur-sm">
-            <StudentCalendar key={`calendar-${refreshKey}`} />
+            <DorsuNewsDisplay 
+              key={`news-${refreshKey}`}
+              limit={3}
+              showRefreshButton={false}
+              compact={true}
+              className="space-y-3"
+            />
           </div>
         </div>
       </div>

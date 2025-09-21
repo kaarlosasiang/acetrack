@@ -152,6 +152,44 @@ export interface Database {
           type?: string
         }
       }
+      dorsu_news: {
+        Row: {
+          id: number
+          news_id: string
+          title: string
+          summary: string
+          image_url: string | null
+          date: string
+          author: string
+          read_more_url: string
+          scraped_at: string
+          created_at: string
+          updated_at: string
+          is_active: boolean
+        }
+        Insert: {
+          news_id: string
+          title: string
+          summary: string
+          image_url?: string | null
+          date: string
+          author: string
+          read_more_url: string
+          scraped_at: string
+          is_active?: boolean
+        }
+        Update: {
+          news_id?: string
+          title?: string
+          summary?: string
+          image_url?: string | null
+          date?: string
+          author?: string
+          read_more_url?: string
+          scraped_at?: string
+          is_active?: boolean
+        }
+      }
     }
   }
 }
@@ -181,6 +219,10 @@ export type CourseUpdate = TablesUpdate<'courses'>
 export type Role = Tables<'roles'>
 export type RoleInsert = TablesInsert<'roles'>
 export type RoleUpdate = TablesUpdate<'roles'>
+
+export type DorsuNews = Tables<'dorsu_news'>
+export type DorsuNewsInsert = TablesInsert<'dorsu_news'>
+export type DorsuNewsUpdate = TablesUpdate<'dorsu_news'>
 
 // Keep User as alias for UserProfile for backward compatibility
 export type User = UserProfile
