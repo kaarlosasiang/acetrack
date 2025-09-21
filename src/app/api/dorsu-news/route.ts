@@ -137,23 +137,21 @@ export async function POST() {
   try {
     console.log('🔄 Manual news refresh requested');
 
-    // Clear cache
-    newsCache = null;
-
-    // Fetch fresh data
+    // Fetch fresh data from DOrSU
     const newsResult = await DorsuNewsService.scrapeNews();
 
-    if (newsResult.success) {
-      // Update cache
-      newsCache = {
-        data: newsResult,
-        lastFetched: Date.now(),
-      };
-
+    if (newsResult.success && newsResult.data.length > 0) {
+      // Save to database
+      console.log('💾 Saving refreshed news to database...');
+      const saveResult = await DorsuNewsDatabaseService.saveNewsItems(newsResult.data);
+      
       return NextResponse.json({
         ...newsResult,
         message: 'News data refreshed successfully',
         cached: false,
+        databaseSync: saveResult.success,
+        inserted: saveResult.inserted,
+        updated: saveResult.updated,
       });
     } else {
       return NextResponse.json(
