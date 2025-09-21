@@ -281,7 +281,7 @@ const EventsList = () => {
   }
 
   return (
-    <Card className="p-0 gap-2">
+    <Card className="!p-0 gap-2">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <CardHeader className="px-0">
           <CardTitle className="flex justify-between items-center gap-2">

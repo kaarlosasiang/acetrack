@@ -170,40 +170,114 @@ const StudentCalendar = () => {
     }
   };
 
+  // Get current week dates for mobile view
+  const getCurrentWeek = () => {
+    const today = new Date();
+    const currentDay = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - currentDay); // Go to Sunday
+    
+    const weekDates = [];
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(startOfWeek);
+      date.setDate(startOfWeek.getDate() + i);
+      weekDates.push(date);
+    }
+    return weekDates;
+  };
+
+  const currentWeek = getCurrentWeek();
+
+  // Get events for a specific date
+  const getEventsForDate = (date: Date) => {
+    return events.filter(
+      (event) => event.date.toDateString() === date.toDateString()
+    );
+  };
+
   // Get dates that have events for calendar highlighting
   const eventDates = events.map((event) => event.date);
 
   return (
     <div className="w-full h-full flex flex-col space-y-4">
-      {/* Calendar */}
+      {/* Calendar - Full calendar on desktop, week view on mobile */}
       <Card className="flex-1 p-0 gap-2">
         <CardHeader className="px-0">
           <CardTitle className="p-0 text-lg flex items-center gap-2">
             <div className="flex items-center space-x-3">
               <div className="p-2 rounded-lg bg-gradient-to-r from-primary/20 to-primary/10">
-                <CalendarDays className="w-5 h-5 text-primary" />
+                <CalendarDays className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-                  Calendar
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100">
+                  <span className="lg:hidden">This Week</span>
+                  <span className="hidden lg:block">Calendar</span>
                 </h2>
               </div>
             </div>
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <Calendar
-            mode="single"
-            selected={selectedDate}
-            onSelect={(date) => date && setSelectedDate(date)}
-            className="w-full"
-            modifiers={{
-              hasEvent: eventDates,
-            }}
-            modifiersClassNames={{
-              hasEvent: "bg-primary/10 text-primary font-semibold",
-            }}
-          />
+          {/* Mobile Week View */}
+          <div className="lg:hidden">
+            <div className="grid grid-cols-7 gap-1 mb-4">
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                <div key={day} className="text-center text-xs font-medium text-gray-500 py-2">
+                  {day}
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-7 gap-1">
+              {currentWeek.map((date, index) => {
+                const isToday = date.toDateString() === new Date().toDateString();
+                const isSelected = date.toDateString() === selectedDate.toDateString();
+                const hasEvents = getEventsForDate(date).length > 0;
+                
+                return (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedDate(date)}
+                    className={`
+                      relative p-2 text-sm rounded-lg transition-colors
+                      ${isSelected 
+                        ? 'bg-primary text-primary-foreground' 
+                        : isToday 
+                          ? 'bg-primary/10 text-primary font-semibold'
+                          : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                      }
+                    `}
+                  >
+                    <div className="text-center">
+                      {date.getDate()}
+                    </div>
+                    {hasEvents && (
+                      <div className={`
+                        absolute bottom-1 left-1/2 transform -translate-x-1/2 
+                        w-1 h-1 rounded-full
+                        ${isSelected ? 'bg-primary-foreground' : 'bg-primary'}
+                      `} />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Desktop Full Calendar */}
+          <div className="hidden lg:block">
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={(date) => date && setSelectedDate(date)}
+              className="w-full"
+              modifiers={{
+                hasEvent: eventDates,
+              }}
+              modifiersClassNames={{
+                hasEvent: "bg-primary/10 text-primary font-semibold",
+              }}
+            />
+          </div>
         </CardContent>
       </Card>
 

@@ -13,6 +13,11 @@ interface QRCodeGeneratorProps {
     dark?: string;
     light?: string;
   };
+  logo?: {
+    src: string;
+    size?: number;
+    borderRadius?: number;
+  };
 }
 
 export function QRCodeGenerator({
@@ -25,6 +30,7 @@ export function QRCodeGenerator({
     dark: "#000000",
     light: "#FFFFFF",
   },
+  logo,
 }: QRCodeGeneratorProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [error, setError] = useState<string | null>(null);
@@ -46,6 +52,60 @@ export function QRCodeGenerator({
           errorCorrectionLevel,
           color,
         });
+
+        // Add logo if provided
+        if (logo && canvasRef.current) {
+          const canvas = canvasRef.current;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            const logoImage = new Image();
+            logoImage.crossOrigin = 'anonymous';
+            logoImage.onload = () => {
+              const logoSize = logo.size || size * 0.2; // Default to 20% of QR code size
+              const logoX = (canvas.width - logoSize) / 2;
+              const logoY = (canvas.height - logoSize) / 2;
+
+              // Create a white background for the logo
+              ctx.fillStyle = '#FFFFFF';
+              const padding = logoSize * 0.1;
+              
+              // Rounded square background
+              const cornerRadius = 6; // Small rounded corners
+              const bgX = logoX - padding;
+              const bgY = logoY - padding;
+              const bgWidth = logoSize + padding * 2;
+              const bgHeight = logoSize + padding * 2;
+              
+              ctx.beginPath();
+              ctx.moveTo(bgX + cornerRadius, bgY);
+              ctx.lineTo(bgX + bgWidth - cornerRadius, bgY);
+              ctx.quadraticCurveTo(bgX + bgWidth, bgY, bgX + bgWidth, bgY + cornerRadius);
+              ctx.lineTo(bgX + bgWidth, bgY + bgHeight - cornerRadius);
+              ctx.quadraticCurveTo(bgX + bgWidth, bgY + bgHeight, bgX + bgWidth - cornerRadius, bgY + bgHeight);
+              ctx.lineTo(bgX + cornerRadius, bgY + bgHeight);
+              ctx.quadraticCurveTo(bgX, bgY + bgHeight, bgX, bgY + bgHeight - cornerRadius);
+              ctx.lineTo(bgX, bgY + cornerRadius);
+              ctx.quadraticCurveTo(bgX, bgY, bgX + cornerRadius, bgY);
+              ctx.closePath();
+              ctx.fill();
+
+              // Draw the logo with square clipping if borderRadius is specified
+              if (logo.borderRadius) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.rect(logoX, logoY, logoSize, logoSize);
+                ctx.clip();
+              }
+
+              ctx.drawImage(logoImage, logoX, logoY, logoSize, logoSize);
+              
+              if (logo.borderRadius) {
+                ctx.restore();
+              }
+            };
+            logoImage.src = logo.src;
+          }
+        }
       } catch (err) {
         setError("Failed to generate QR code");
         console.error("QR Code generation error:", err);
@@ -53,7 +113,7 @@ export function QRCodeGenerator({
     };
 
     generateQR();
-  }, [value, size, margin, errorCorrectionLevel, color, isClient]);
+  }, [value, size, margin, errorCorrectionLevel, color, logo, isClient]);
 
   if (!isClient) {
     return (
