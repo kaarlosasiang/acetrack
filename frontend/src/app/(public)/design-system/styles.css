@@ -1,0 +1,136 @@
+/* Design System Utilities */
+
+/* Custom CSS variables for design system */
+:root {
+  --ds-primary: oklch(75% .183 55.934);
+  --ds-black: #1e1e1e;
+  --ds-background-light: white;
+}
+
+/* Custom utility classes */
+.bg-ds-primary {
+  background-color: var(--ds-primary);
+}
+
+.text-ds-primary {
+  color: var(--ds-primary);
+}
+
+.border-ds-primary {
+  border-color: var(--ds-primary);
+}
+
+.bg-ds-black {
+  background-color: var(--ds-black);
+}
+
+.text-ds-black {
+  color: var(--ds-black);
+}
+
+.bg-ds-background {
+  background-color: var(--ds-background-light);
+}
+
+/* Focus states for accessibility */
+.focus-ds {
+  @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+  focus:ring-color: var(--ds-primary);
+}
+
+/* Button variants */
+.btn-primary {
+  background-color: var(--ds-primary);
+  color: white;
+  @apply px-6 py-3 rounded-lg font-medium transition-all duration-200;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.btn-secondary {
+  background-color: white;
+  color: var(--ds-black);
+  @apply px-6 py-3 rounded-lg font-medium border border-gray-300 transition-all duration-200;
+}
+
+.btn-secondary:hover {
+  @apply bg-gray-50;
+}
+
+.btn-text {
+  color: var(--ds-primary);
+  @apply px-6 py-3 rounded-lg font-medium transition-all duration-200;
+}
+
+.btn-text:hover {
+  @apply bg-gray-50;
+}
+
+/* Card variants */
+.card-basic {
+  @apply bg-white border border-gray-200 rounded-lg shadow-sm;
+}
+
+.card-elevated {
+  @apply bg-white border border-gray-200 rounded-lg shadow-md;
+}
+
+.card-primary {
+  background-color: var(--ds-primary);
+  @apply text-white rounded-lg shadow-lg;
+}
+
+/* Input styles */
+.input-base {
+  @apply w-full px-4 py-3 border border-gray-300 rounded-lg transition-all duration-200;
+}
+
+.input-base:focus {
+  border-color: var(--ds-primary);
+  @apply outline-none ring-2;
+  ring-color: var(--ds-primary);
+  ring-opacity: 0.2;
+}
+
+/* Typography scale */
+.text-display {
+  @apply text-6xl font-bold leading-tight;
+}
+
+.text-h1 {
+  @apply text-5xl font-bold leading-tight;
+}
+
+.text-h2 {
+  @apply text-4xl font-semibold leading-tight;
+}
+
+.text-h3 {
+  @apply text-3xl font-semibold leading-normal;
+}
+
+.text-h4 {
+  @apply text-2xl font-medium leading-normal;
+}
+
+.text-h5 {
+  @apply text-xl font-medium leading-normal;
+}
+
+.text-body-lg {
+  @apply text-lg leading-relaxed;
+}
+
+.text-body {
+  @apply text-base leading-relaxed;
+}
+
+.text-body-sm {
+  @apply text-sm leading-relaxed;
+}
+
+.text-caption {
+  @apply text-xs text-gray-600;
+}

@@ -1,30 +1,13 @@
-"use client";
-
-import { ForgotPasswordForm } from "@/components/forms/forgot-password/form";
-import { ForgotPasswordFormData } from "@/components/forms/forgot-password/schema";
-import Image from "next/image";
-import Link from "next/link";
-
 export default function ForgotPasswordPage() {
-  const handleSubmit = async (data: ForgotPasswordFormData) => {
-    console.log("Forgot password data:", data);
-    // TODO: Implement forgot password logic
-  };
-
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
-      <div className="flex w-full max-w-sm flex-col gap-6">
-        <Link href="/" className="flex items-center gap-2 self-center font-medium">
-          <Image
-            src="/images/acetrack-icon.png"
-            alt="AceTrack Icon"
-            width={24}
-            height={24}
-          />
-          AceTrack
-        </Link>
-        <ForgotPasswordForm onSubmit={handleSubmit} />
-      </div>
+    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
+      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
+        <h1 className="text-3xl font-bold">Forgot Password</h1>
+        <p className="text-lg text-gray-600">Please enter your email to reset your password.</p>
+      </main>
+      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
+        <p className="text-sm text-gray-500">© 2024 AceTrack. All rights reserved.</p>
+      </footer>
     </div>
   );
 }
