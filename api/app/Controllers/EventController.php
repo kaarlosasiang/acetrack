@@ -497,18 +497,33 @@ class EventController extends BaseController {
                 $this->error('QR codes can only be generated for published events', 400);
             }
             
-            // TODO: Implement QR code generation
-            // This would require a QR code library and token generation system
+            // Generate QR code using QRCodeHelper
+            require_once APP_PATH . '/Helpers/QRCodeHelper.php';
+            $qrHelper = new QRCodeHelper();
             
-            $qrToken = bin2hex(random_bytes(16));
-            $qrUrl = "http://localhost:8888/acetrack/backend/scan/{$qrToken}";
+            // Set expiration to 1 hour after event end time
+            $expiresAt = date('Y-m-d H:i:s', strtotime($event['end_datetime']) + 3600);
+            
+            $qrResult = $qrHelper->generateEventQR($eventId, $this->currentTenantId, $expiresAt);
+            
+            if (!$qrResult['success']) {
+                $this->error('Failed to generate QR code: ' . $qrResult['error']);
+            }
+            
+            // Log QR code generation
+            $this->logAudit('event_qr_generated', 'Event', $eventId, null, [
+                'qr_token' => $qrResult['qr_token'],
+                'expires_at' => $qrResult['expires_at']
+            ]);
             
             $this->success([
                 'event_id' => $eventId,
-                'qr_token' => $qrToken,
-                'qr_url' => $qrUrl,
-                'qr_code_image' => null, // Would contain base64 QR code image
-                'expires_at' => date('Y-m-d H:i:s', strtotime($event['end_datetime']) + 3600) // 1 hour after event
+                'qr_token' => $qrResult['qr_token'],
+                'qr_url' => $qrResult['qr_url'],
+                'qr_code_image' => $qrResult['qr_code_image'],
+                'expires_at' => $qrResult['expires_at'],
+                'event_name' => $event['name'],
+                'event_datetime' => $event['start_datetime']
             ], 'QR code generated successfully');
             
         } catch (Exception $e) {

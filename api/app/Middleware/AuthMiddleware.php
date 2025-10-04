@@ -2,12 +2,20 @@
 class AuthMiddleware {
     
     public function handle() {
-        // Check for Authorization header
-        if (!isset($_SERVER['HTTP_AUTHORIZATION'])) {
-            $this->unauthorized('Authorization header is required');
+        // Check for Authorization header (multiple possible locations)
+        $authHeader = null;
+        
+        if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
+            $authHeader = $_SERVER['HTTP_AUTHORIZATION'];
+        } elseif (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
+            $authHeader = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+        } elseif (isset($_SERVER['REDIRECT_REDIRECT_HTTP_AUTHORIZATION'])) {
+            $authHeader = $_SERVER['REDIRECT_REDIRECT_HTTP_AUTHORIZATION'];
         }
         
-        $authHeader = $_SERVER['HTTP_AUTHORIZATION'];
+        if (!$authHeader) {
+            $this->unauthorized('Authorization header is required');
+        }
         
         // Check Bearer token format
         if (!preg_match('/Bearer\s+(.*)$/i', $authHeader, $matches)) {

@@ -23,41 +23,31 @@ class AttendanceController extends BaseController {
                 $this->error('Event not found', 404);
             }
             
-            // Check if event is published and not completed
-            if ($event['status'] !== 'published') {
-                $this->error('Event is not available for check-in', 400);
+            // Use EventAttendance model for check-in validation and processing
+            $attendanceModel = new EventAttendance();
+            
+            // Check if user can check in
+            $canCheckIn = $attendanceModel->canCheckIn($eventId, $this->currentUser['id']);
+            if (!$canCheckIn['can_check_in']) {
+                $this->error($canCheckIn['reason'], 400);
             }
             
-            // Check if event has started
-            if (strtotime($event['start_datetime']) > time()) {
-                $this->error('Event has not started yet', 400);
-            }
-            
-            // Check if check-in is still allowed (within event duration + grace period)
-            $endTime = strtotime($event['end_datetime']);
-            $graceMinutes = 30; // Allow check-in up to 30 minutes after event ends
-            if (time() > ($endTime + ($graceMinutes * 60))) {
-                $this->error('Check-in period has ended', 400);
-            }
-            
-            // TODO: Check if user is already checked in
-            // This would require EventAttendance model or extending existing models
-            
-            // For now, create a simple attendance record
-            // In a complete implementation, you'd have an EventAttendance model
-            $checkInTime = date('Y-m-d H:i:s');
+            // Perform check-in
+            $attendance = $attendanceModel->checkIn($eventId, $this->currentUser['id'], null, 'qr_code');
             
             // Log the check-in
-            $this->logAudit('event_check_in', 'Event', $eventId, null, [
+            $this->logAudit('event_check_in', 'EventAttendance', $attendance['id'], null, [
+                'event_id' => $eventId,
                 'user_id' => $this->currentUser['id'],
-                'check_in_time' => $checkInTime,
+                'check_in_time' => $attendance['check_in_time'],
                 'method' => 'self_checkin'
             ]);
             
             $this->success([
+                'attendance_id' => $attendance['id'],
                 'event_id' => $eventId,
                 'event_title' => $event['title'],
-                'check_in_time' => $checkInTime,
+                'check_in_time' => $attendance['check_in_time'],
                 'message' => 'Successfully checked in to ' . $event['title']
             ], 'Check-in successful');
             
@@ -86,22 +76,31 @@ class AttendanceController extends BaseController {
                 $this->error('Event not found', 404);
             }
             
-            // TODO: Check if user is checked in first
-            // This would require EventAttendance model
+            // Use EventAttendance model for check-out validation and processing
+            $attendanceModel = new EventAttendance();
             
-            $checkOutTime = date('Y-m-d H:i:s');
+            // Check if user can check out
+            $canCheckOut = $attendanceModel->canCheckOut($eventId, $this->currentUser['id']);
+            if (!$canCheckOut['can_check_out']) {
+                $this->error($canCheckOut['reason'], 400);
+            }
+            
+            // Perform check-out
+            $attendance = $attendanceModel->checkOut($eventId, $this->currentUser['id'], null, 'qr_code');
             
             // Log the check-out
-            $this->logAudit('event_check_out', 'Event', $eventId, null, [
+            $this->logAudit('event_check_out', 'EventAttendance', $attendance['id'], null, [
+                'event_id' => $eventId,
                 'user_id' => $this->currentUser['id'],
-                'check_out_time' => $checkOutTime,
+                'check_out_time' => $attendance['check_out_time'],
                 'method' => 'self_checkout'
             ]);
             
             $this->success([
+                'attendance_id' => $attendance['id'],
                 'event_id' => $eventId,
                 'event_title' => $event['title'],
-                'check_out_time' => $checkOutTime,
+                'check_out_time' => $attendance['check_out_time'],
                 'message' => 'Successfully checked out from ' . $event['title']
             ], 'Check-out successful');
             
@@ -321,6 +320,143 @@ class AttendanceController extends BaseController {
         } catch (Exception $e) {
             $this->error('Failed to export attendance data: ' . $e->getMessage(), 500);
         }
+    }
+    
+    // Get event attendance (admin - referenced in routes)
+    public function eventAttendance($params = []) {
+        $this->requireRole(['admin', 'org_subadmin']);
+        
+        try {
+            $eventId = $params['id'] ?? null;
+            
+            if (!$eventId) {
+                $this->error('Event ID is required', 400);
+            }
+            
+            $attendanceModel = new EventAttendance();
+            $attendees = $attendanceModel->getEventAttendees($eventId);
+            $stats = $attendanceModel->getEventStats($eventId);
+            
+            $this->success([
+                'event_id' => $eventId,
+                'attendees' => $attendees,
+                'statistics' => $stats
+            ], 'Event attendance retrieved successfully');
+            
+        } catch (Exception $e) {
+            $this->error('Failed to get event attendance: ' . $e->getMessage(), 500);
+        }
+    }
+    
+    // Admin check-in user to event (referenced in routes)
+    public function checkIn($params = []) {
+        return $this->adminCheckIn($params);
+    }
+    
+    // Admin check-out user from event (referenced in routes)
+    public function checkOut($params = []) {
+        return $this->adminCheckOut($params);
+    }
+    
+    // Manual check-in (admin)
+    public function manualCheckIn($params = []) {
+        $this->requireRole(['admin', 'org_subadmin']);
+        
+        try {
+            $attendanceId = $params['id'] ?? null;
+            $input = $this->getInput();
+            
+            if (!$attendanceId) {
+                $this->error('Attendance ID is required', 400);
+            }
+            
+            $attendanceModel = new EventAttendance();
+            $attendance = $attendanceModel->find($attendanceId);
+            
+            if (!$attendance) {
+                $this->error('Attendance record not found', 404);
+            }
+            
+            // Update check-in time manually
+            $updatedAttendance = $attendanceModel->update($attendanceId, [
+                'check_in_time' => $input['check_in_time'] ?? date('Y-m-d H:i:s'),
+                'check_in_method' => 'manual',
+                'checked_in_by_user_id' => $this->currentUser['id']
+            ]);
+            
+            $this->logAudit('manual_check_in', 'EventAttendance', $attendanceId, $attendance, $updatedAttendance);
+            
+            $this->success($updatedAttendance, 'Manual check-in completed successfully');
+            
+        } catch (Exception $e) {
+            $this->error('Manual check-in failed: ' . $e->getMessage(), 500);
+        }
+    }
+    
+    // Manual check-out (admin)
+    public function manualCheckOut($params = []) {
+        $this->requireRole(['admin', 'org_subadmin']);
+        
+        try {
+            $attendanceId = $params['id'] ?? null;
+            $input = $this->getInput();
+            
+            if (!$attendanceId) {
+                $this->error('Attendance ID is required', 400);
+            }
+            
+            $attendanceModel = new EventAttendance();
+            $attendance = $attendanceModel->find($attendanceId);
+            
+            if (!$attendance) {
+                $this->error('Attendance record not found', 404);
+            }
+            
+            // Update check-out time manually
+            $updatedAttendance = $attendanceModel->update($attendanceId, [
+                'check_out_time' => $input['check_out_time'] ?? date('Y-m-d H:i:s'),
+                'check_out_method' => 'manual',
+                'checked_out_by_user_id' => $this->currentUser['id']
+            ]);
+            
+            $this->logAudit('manual_check_out', 'EventAttendance', $attendanceId, $attendance, $updatedAttendance);
+            
+            $this->success($updatedAttendance, 'Manual check-out completed successfully');
+            
+        } catch (Exception $e) {
+            $this->error('Manual check-out failed: ' . $e->getMessage(), 500);
+        }
+    }
+    
+    // Get member attendance records (admin)
+    public function memberAttendance($params = []) {
+        $this->requireRole(['admin', 'org_subadmin']);
+        
+        try {
+            $memberId = $params['member_id'] ?? null;
+            
+            if (!$memberId) {
+                $this->error('Member ID is required', 400);
+            }
+            
+            $attendanceModel = new EventAttendance();
+            $attendance = $attendanceModel->getUserAttendanceHistory($memberId, $this->currentTenantId);
+            
+            $this->success($attendance, 'Member attendance retrieved successfully');
+            
+        } catch (Exception $e) {
+            $this->error('Failed to get member attendance: ' . $e->getMessage(), 500);
+        }
+    }
+    
+    // Get attendance reports (referenced in routes)
+    public function reports($params = []) {
+        return $this->getReports($params);
+    }
+    
+    // Export attendance (referenced in routes)
+    public function export($params = []) {
+        return $this->exportData($params);
     }
 }
 ?>

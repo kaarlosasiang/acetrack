@@ -194,6 +194,52 @@ class OrganizationController extends BaseController {
         }
     }
     
+    // Generate membership QR code for organization (admin only)
+    public function generateMembershipQR($params = []) {
+        $this->requireRole(['admin']);
+        
+        try {
+            $input = $this->getInput();
+            $expiresInDays = max(1, min(30, (int)($input['expires_in_days'] ?? 7))); // 1-30 days
+            
+            // Generate QR code using QRCodeHelper
+            require_once APP_PATH . '/Helpers/QRCodeHelper.php';
+            $qrHelper = new QRCodeHelper();
+            
+            $expiresAt = date('Y-m-d H:i:s', strtotime("+{$expiresInDays} days"));
+            $qrResult = $qrHelper->generateMembershipQR($this->currentTenantId, $expiresAt);
+            
+            if (!$qrResult['success']) {
+                $this->error('Failed to generate membership QR code: ' . $qrResult['error']);
+            }
+            
+            // Get organization name for response
+            $orgModel = new Organization();
+            $organization = $orgModel->find($this->currentTenantId);
+            
+            // Log QR code generation
+            $this->logAudit('membership_qr_generated', 'Organization', $this->currentTenantId, null, [
+                'qr_token' => $qrResult['qr_token'],
+                'expires_at' => $qrResult['expires_at'],
+                'expires_in_days' => $expiresInDays
+            ]);
+            
+            $this->success([
+                'organization_id' => $this->currentTenantId,
+                'organization_name' => $organization['name'] ?? 'Unknown',
+                'qr_token' => $qrResult['qr_token'],
+                'qr_url' => $qrResult['qr_url'],
+                'qr_code_image' => $qrResult['qr_code_image'],
+                'expires_at' => $qrResult['expires_at'],
+                'expires_in_days' => $expiresInDays,
+                'instructions' => 'Share this QR code with potential members. They can scan it to request membership in your organization.'
+            ], 'Membership QR code generated successfully');
+            
+        } catch (Exception $e) {
+            $this->error('Failed to generate membership QR code: ' . $e->getMessage(), 500);
+        }
+    }
+    
     // Activate organization (super admin only)
     public function activate($params = []) {
         $this->requireSuperAdmin();

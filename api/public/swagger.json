@@ -1,0 +1,1169 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "AceTrack Attendance System API",
+    "description": "A comprehensive multi-tenant API for managing organizations, events, and member attendance. This API provides secure authentication, role-based access control, QR code generation, file uploads, and subscription management.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "AceTrack Support",
+      "email": "support@acetrack.app"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8888/acetrack/api",
+      "description": "Development server"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT token obtained from login endpoint"
+      }
+    },
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "first_name": { "type": "string", "example": "John" },
+          "last_name": { "type": "string", "example": "Doe" },
+          "email": { "type": "string", "format": "email", "example": "john.doe@example.com" },
+          "phone_number": { "type": "string", "example": "+1234567890" },
+          "course": { "type": "string", "example": "Computer Science" },
+          "year_level": { "type": "string", "enum": ["1st", "2nd", "3rd", "4th", "5th", "Graduate", "Alumni"], "example": "4th" },
+          "status": { "type": "string", "enum": ["active", "pending", "inactive"], "example": "active" },
+          "created_at": { "type": "string", "format": "date-time", "example": "2024-01-01T10:00:00Z" }
+        }
+      },
+      "Organization": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "name": { "type": "string", "example": "Tech Student Club" },
+          "description": { "type": "string", "example": "A club for technology enthusiasts" },
+          "logo_url": { "type": "string", "example": "/uploads/logo.png" },
+          "banner_url": { "type": "string", "example": "/uploads/banner.jpg" },
+          "member_count": { "type": "integer", "example": 150 },
+          "status": { "type": "string", "enum": ["active", "inactive"], "example": "active" },
+          "created_at": { "type": "string", "format": "date-time", "example": "2024-01-01T10:00:00Z" }
+        }
+      },
+      "Event": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "name": { "type": "string", "example": "Tech Workshop 2024" },
+          "description": { "type": "string", "example": "Annual technology workshop" },
+          "start_datetime": { "type": "string", "format": "date-time", "example": "2024-03-15T14:00:00Z" },
+          "end_datetime": { "type": "string", "format": "date-time", "example": "2024-03-15T18:00:00Z" },
+          "location": { "type": "string", "example": "Main Auditorium" },
+          "max_attendees": { "type": "integer", "example": 200 },
+          "status": { "type": "string", "enum": ["draft", "published", "cancelled"], "example": "published" },
+          "banner_url": { "type": "string", "example": "/uploads/event_banner.jpg" },
+          "qr_code_active": { "type": "boolean", "example": true },
+          "registered_count": { "type": "integer", "example": 85 },
+          "checked_in_count": { "type": "integer", "example": 45 },
+          "created_at": { "type": "string", "format": "date-time", "example": "2024-01-01T10:00:00Z" }
+        }
+      },
+      "Attendance": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 123 },
+          "event_id": { "type": "integer", "example": 1 },
+          "user_id": { "type": "integer", "example": 1 },
+          "check_in_time": { "type": "string", "format": "date-time", "example": "2024-03-15T14:15:00Z" },
+          "check_out_time": { "type": "string", "format": "date-time", "example": "2024-03-15T17:45:00Z" },
+          "status": { "type": "string", "enum": ["checked_in", "completed"], "example": "completed" },
+          "duration": { "type": "string", "example": "3h 30m" },
+          "created_at": { "type": "string", "format": "date-time", "example": "2024-03-15T14:15:00Z" }
+        }
+      },
+      "Subscription": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "organization_id": { "type": "integer", "example": 1 },
+          "start_date": { "type": "string", "format": "date", "example": "2024-01-01" },
+          "end_date": { "type": "string", "format": "date", "example": "2024-12-31" },
+          "amount": { "type": "number", "format": "float", "example": 299.99 },
+          "status": { "type": "string", "enum": ["active", "pending_verification", "expired", "rejected"], "example": "active" },
+          "receipt_reference": { "type": "string", "example": "TXN123456789" },
+          "verified_at": { "type": "string", "format": "date-time", "example": "2024-01-02T10:00:00Z" },
+          "created_at": { "type": "string", "format": "date-time", "example": "2024-01-01T10:00:00Z" }
+        }
+      },
+      "QRCode": {
+        "type": "object",
+        "properties": {
+          "qr_token": { "type": "string", "example": "abc123def456..." },
+          "qr_url": { "type": "string", "example": "http://localhost:8888/acetrack/backend/public/scan/abc123def456..." },
+          "qr_code_image": { "type": "string", "example": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..." },
+          "expires_at": { "type": "string", "format": "date-time", "example": "2024-01-09T14:30:00Z" },
+          "type": { "type": "string", "enum": ["event_attendance", "membership_registration"], "example": "event_attendance" }
+        }
+      },
+      "ApiResponse": {
+        "type": "object",
+        "required": ["success"],
+        "properties": {
+          "success": { "type": "boolean", "example": true },
+          "message": { "type": "string", "example": "Operation completed successfully" },
+          "data": { "type": "object" }
+        }
+      },
+      "ApiError": {
+        "type": "object",
+        "required": ["success", "error", "message"],
+        "properties": {
+          "success": { "type": "boolean", "example": false },
+          "error": { "type": "string", "example": "validation_failed" },
+          "message": { "type": "string", "example": "The request data is invalid" },
+          "details": { 
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        }
+      },
+      "Pagination": {
+        "type": "object",
+        "properties": {
+          "current_page": { "type": "integer", "example": 1 },
+          "per_page": { "type": "integer", "example": 20 },
+          "total": { "type": "integer", "example": 100 },
+          "total_pages": { "type": "integer", "example": 5 },
+          "has_next": { "type": "boolean", "example": true },
+          "has_prev": { "type": "boolean", "example": false }
+        }
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "Authentication required",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ApiError"
+            },
+            "example": {
+              "success": false,
+              "error": "unauthorized",
+              "message": "Authentication required"
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "Insufficient permissions",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ApiError"
+            },
+            "example": {
+              "success": false,
+              "error": "forbidden",
+              "message": "Insufficient permissions to perform this action"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Resource not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ApiError"
+            },
+            "example": {
+              "success": false,
+              "error": "not_found",
+              "message": "The requested resource was not found"
+            }
+          }
+        }
+      },
+      "ValidationError": {
+        "description": "Validation failed",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ApiError"
+            },
+            "example": {
+              "success": false,
+              "error": "validation_failed",
+              "message": "The request data is invalid",
+              "details": {
+                "email": ["The email field is required", "The email must be a valid email address"],
+                "password": ["The password must be at least 8 characters"]
+              }
+            }
+          }
+        }
+      },
+      "RateLimit": {
+        "description": "Rate limit exceeded",
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                { "$ref": "#/components/schemas/ApiError" },
+                {
+                  "type": "object",
+                  "properties": {
+                    "rate_limit": {
+                      "type": "object",
+                      "properties": {
+                        "max_attempts": { "type": "integer", "example": 100 },
+                        "attempts_used": { "type": "integer", "example": 100 },
+                        "attempts_remaining": { "type": "integer", "example": 0 },
+                        "reset_time": { "type": "string", "format": "date-time", "example": "2024-01-02T17:30:00Z" }
+                      }
+                    }
+                  }
+                }
+              ]
+            },
+            "example": {
+              "success": false,
+              "error": "Rate limit exceeded",
+              "message": "Too many requests. Please try again later.",
+              "rate_limit": {
+                "max_attempts": 100,
+                "attempts_used": 100,
+                "attempts_remaining": 0,
+                "reset_time": "2024-01-02T17:30:00Z"
+              }
+            }
+          }
+        }
+      }
+    },
+    "parameters": {
+      "PageParam": {
+        "name": "page",
+        "in": "query",
+        "description": "Page number for pagination",
+        "required": false,
+        "schema": { "type": "integer", "minimum": 1, "default": 1 }
+      },
+      "PerPageParam": {
+        "name": "per_page",
+        "in": "query",
+        "description": "Number of items per page",
+        "required": false,
+        "schema": { "type": "integer", "minimum": 1, "maximum": 100, "default": 20 }
+      },
+      "SearchParam": {
+        "name": "search",
+        "in": "query",
+        "description": "Search term to filter results",
+        "required": false,
+        "schema": { "type": "string" }
+      },
+      "CSRFHeader": {
+        "name": "X-CSRF-Token",
+        "in": "header",
+        "description": "CSRF token for state-changing operations",
+        "required": true,
+        "schema": { "type": "string" }
+      }
+    }
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": ["System"],
+        "summary": "Health check",
+        "description": "Check API health status",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "API is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                },
+                "example": {
+                  "success": true,
+                  "status": "healthy",
+                  "timestamp": "2024-01-02T14:30:00Z"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/csrf-token": {
+      "get": {
+        "tags": ["Security"],
+        "summary": "Get CSRF token",
+        "description": "Retrieve CSRF token for secure form submissions",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "CSRF token generated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                },
+                "example": {
+                  "success": true,
+                  "csrf_token": "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Register new user",
+        "description": "Create a new user account with email verification",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["first_name", "last_name", "email", "password", "password_confirmation"],
+                "properties": {
+                  "first_name": { "type": "string", "maxLength": 100, "example": "John" },
+                  "last_name": { "type": "string", "maxLength": 100, "example": "Doe" },
+                  "email": { "type": "string", "format": "email", "example": "john.doe@example.com" },
+                  "password": { "type": "string", "minLength": 8, "example": "SecurePassword123" },
+                  "password_confirmation": { "type": "string", "example": "SecurePassword123" },
+                  "phone_number": { "type": "string", "example": "+1234567890" },
+                  "course": { "type": "string", "maxLength": 100, "example": "Computer Science" },
+                  "year_level": { "type": "string", "enum": ["1st", "2nd", "3rd", "4th", "5th", "Graduate", "Alumni"], "example": "4th" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User registered successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                },
+                "example": {
+                  "success": true,
+                  "message": "User registered successfully. Please check your email to verify your account.",
+                  "data": {
+                    "user": {
+                      "id": 1,
+                      "first_name": "John",
+                      "last_name": "Doe",
+                      "email": "john.doe@example.com",
+                      "status": "pending"
+                    },
+                    "email_sent": true
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimit" }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "User login",
+        "description": "Authenticate user and receive JWT tokens",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "format": "email", "example": "john.doe@example.com" },
+                  "password": { "type": "string", "example": "SecurePassword123" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                },
+                "example": {
+                  "success": true,
+                  "message": "Login successful",
+                  "data": {
+                    "user": {
+                      "id": 1,
+                      "first_name": "John",
+                      "last_name": "Doe",
+                      "email": "john.doe@example.com",
+                      "status": "active"
+                    },
+                    "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+                    "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+                    "token_type": "Bearer",
+                    "expires_in": 604800
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimit" }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "User logout",
+        "description": "Invalidate current session token",
+        "responses": {
+          "200": {
+            "description": "Logout successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                },
+                "example": {
+                  "success": true,
+                  "message": "Logout successful"
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/auth/forgot-password": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Request password reset",
+        "description": "Send password reset email to user",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email"],
+                "properties": {
+                  "email": { "type": "string", "format": "email", "example": "john.doe@example.com" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password reset email sent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                },
+                "example": {
+                  "success": true,
+                  "message": "If the email exists, a password reset link has been sent."
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimit" }
+        }
+      }
+    },
+    "/auth/reset-password": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Reset password",
+        "description": "Reset user password using token",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["token", "password", "password_confirmation"],
+                "properties": {
+                  "token": { "type": "string", "example": "password_reset_token_here" },
+                  "password": { "type": "string", "minLength": 8, "example": "NewSecurePassword123" },
+                  "password_confirmation": { "type": "string", "example": "NewSecurePassword123" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password reset successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                },
+                "example": {
+                  "success": true,
+                  "message": "Password has been reset successfully"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/ValidationError" }
+        }
+      }
+    },
+    "/api/org/info": {
+      "get": {
+        "tags": ["Organization"],
+        "summary": "Get organization info",
+        "description": "Retrieve current organization details",
+        "responses": {
+          "200": {
+            "description": "Organization details retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/Organization" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "put": {
+        "tags": ["Organization"],
+        "summary": "Update organization",
+        "description": "Update organization information (Admin only)",
+        "parameters": [
+          { "$ref": "#/components/parameters/CSRFHeader" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string", "maxLength": 200, "example": "Updated Tech Student Club" },
+                  "description": { "type": "string", "maxLength": 1000, "example": "An updated description for the club" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Organization updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/Organization" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "400": { "$ref": "#/components/responses/ValidationError" }
+        }
+      }
+    },
+    "/api/org/generate-qr": {
+      "post": {
+        "tags": ["Organization", "QR Codes"],
+        "summary": "Generate membership QR code",
+        "description": "Generate QR code for organization membership registration (Admin only)",
+        "parameters": [
+          { "$ref": "#/components/parameters/CSRFHeader" }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "expires_in_days": { "type": "integer", "minimum": 1, "maximum": 30, "default": 7, "example": 7 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "QR code generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "allOf": [
+                            { "$ref": "#/components/schemas/QRCode" },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "organization_id": { "type": "integer", "example": 1 },
+                                "organization_name": { "type": "string", "example": "Tech Student Club" },
+                                "expires_in_days": { "type": "integer", "example": 7 },
+                                "instructions": { "type": "string", "example": "Share this QR code with potential members..." }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/api/events": {
+      "get": {
+        "tags": ["Events"],
+        "summary": "List events",
+        "description": "Get paginated list of events",
+        "parameters": [
+          { "$ref": "#/components/parameters/PageParam" },
+          { "$ref": "#/components/parameters/PerPageParam" },
+          { "$ref": "#/components/parameters/SearchParam" },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter events by status",
+            "required": false,
+            "schema": { "type": "string", "enum": ["draft", "published", "cancelled"] }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Events retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "events": {
+                              "type": "array",
+                              "items": { "$ref": "#/components/schemas/Event" }
+                            },
+                            "pagination": { "$ref": "#/components/schemas/Pagination" }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      },
+      "post": {
+        "tags": ["Events"],
+        "summary": "Create event",
+        "description": "Create a new event (Admin/Sub-Admin only)",
+        "parameters": [
+          { "$ref": "#/components/parameters/CSRFHeader" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "start_datetime", "end_datetime", "location"],
+                "properties": {
+                  "name": { "type": "string", "maxLength": 200, "example": "New Tech Meetup" },
+                  "description": { "type": "string", "example": "Monthly tech meetup for developers" },
+                  "start_datetime": { "type": "string", "format": "date-time", "example": "2024-04-20T15:00:00Z" },
+                  "end_datetime": { "type": "string", "format": "date-time", "example": "2024-04-20T19:00:00Z" },
+                  "location": { "type": "string", "maxLength": 255, "example": "Conference Room A" },
+                  "max_attendees": { "type": "integer", "minimum": 1, "example": 100 },
+                  "status": { "type": "string", "enum": ["draft", "published"], "default": "draft", "example": "draft" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Event created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": { "$ref": "#/components/schemas/Event" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "400": { "$ref": "#/components/responses/ValidationError" }
+        }
+      }
+    },
+    "/api/events/{id}/qr": {
+      "post": {
+        "tags": ["Events", "QR Codes"],
+        "summary": "Generate event QR code",
+        "description": "Generate QR code for event attendance (Admin/Sub-Admin only)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Event ID",
+            "schema": { "type": "integer", "example": 1 }
+          },
+          { "$ref": "#/components/parameters/CSRFHeader" }
+        ],
+        "responses": {
+          "200": {
+            "description": "QR code generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "allOf": [
+                            { "$ref": "#/components/schemas/QRCode" },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "event_id": { "type": "integer", "example": 1 },
+                                "event_name": { "type": "string", "example": "Tech Workshop 2024" },
+                                "event_datetime": { "type": "string", "format": "date-time", "example": "2024-03-15T14:00:00Z" }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/attendance/check-in": {
+      "post": {
+        "tags": ["Attendance"],
+        "summary": "Check in to event",
+        "description": "Check in to an event (authenticated users)",
+        "parameters": [
+          { "$ref": "#/components/parameters/CSRFHeader" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["event_id"],
+                "properties": {
+                  "event_id": { "type": "integer", "example": 1 },
+                  "qr_token": { "type": "string", "description": "Optional QR token", "example": "optional_qr_token" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Check-in successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "attendance_id": { "type": "integer", "example": 123 },
+                            "event_id": { "type": "integer", "example": 1 },
+                            "user_id": { "type": "integer", "example": 1 },
+                            "check_in_time": { "type": "string", "format": "date-time", "example": "2024-03-15T14:15:00Z" },
+                            "status": { "type": "string", "example": "checked_in" },
+                            "event_name": { "type": "string", "example": "Tech Workshop 2024" }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/attendance/check-out": {
+      "post": {
+        "tags": ["Attendance"],
+        "summary": "Check out from event",
+        "description": "Check out from an event (authenticated users)",
+        "parameters": [
+          { "$ref": "#/components/parameters/CSRFHeader" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["event_id"],
+                "properties": {
+                  "event_id": { "type": "integer", "example": 1 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Check-out successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "attendance_id": { "type": "integer", "example": 123 },
+                            "check_out_time": { "type": "string", "format": "date-time", "example": "2024-03-15T17:45:00Z" },
+                            "total_duration": { "type": "string", "example": "3 hours 30 minutes" },
+                            "status": { "type": "string", "example": "completed" }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/qr/scan/{token}": {
+      "get": {
+        "tags": ["QR Codes"],
+        "summary": "Scan QR code",
+        "description": "Process QR code scan (public endpoint)",
+        "security": [],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "description": "QR code token",
+            "schema": { "type": "string", "example": "abc123def456..." }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "QR code scanned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "oneOf": [
+                            {
+                              "type": "object",
+                              "description": "Event attendance QR scan result",
+                              "properties": {
+                                "type": { "type": "string", "example": "event_attendance" },
+                                "status": { "type": "string", "example": "ready" },
+                                "action": { "type": "string", "example": "check_in" },
+                                "event": { "$ref": "#/components/schemas/Event" },
+                                "organization_id": { "type": "integer", "example": 1 },
+                                "next_steps": {
+                                  "type": "object",
+                                  "properties": {
+                                    "endpoint": { "type": "string", "example": "/attendance/check_in" },
+                                    "method": { "type": "string", "example": "POST" },
+                                    "required_data": { "type": "object", "example": {"event_id": 1} },
+                                    "requires_auth": { "type": "boolean", "example": true }
+                                  }
+                                }
+                              }
+                            },
+                            {
+                              "type": "object",
+                              "description": "Membership registration QR scan result",
+                              "properties": {
+                                "type": { "type": "string", "example": "membership_registration" },
+                                "status": { "type": "string", "example": "ready" },
+                                "organization": { "$ref": "#/components/schemas/Organization" },
+                                "next_steps": {
+                                  "type": "object",
+                                  "properties": {
+                                    "endpoint": { "type": "string", "example": "/organization-member/join" },
+                                    "method": { "type": "string", "example": "POST" },
+                                    "required_data": { "type": "object", "example": {"organization_id": 1} },
+                                    "requires_auth": { "type": "boolean", "example": true }
+                                  }
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/org/subscription": {
+      "get": {
+        "tags": ["Subscriptions"],
+        "summary": "Get current subscription",
+        "description": "Get organization's current subscription status (Admin only)",
+        "responses": {
+          "200": {
+            "description": "Subscription information retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "current_subscription": { 
+                              "oneOf": [
+                                { "$ref": "#/components/schemas/Subscription" },
+                                { "type": "null" }
+                              ]
+                            },
+                            "is_active": { "type": "boolean", "example": true },
+                            "status": { "type": "string", "example": "active" },
+                            "days_until_expiry": { "type": "integer", "example": 300 }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/api/org/subscription/renew": {
+      "post": {
+        "tags": ["Subscriptions"],
+        "summary": "Renew subscription",
+        "description": "Submit subscription renewal (Admin only)",
+        "parameters": [
+          { "$ref": "#/components/parameters/CSRFHeader" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["start_date", "end_date", "amount"],
+                "properties": {
+                  "start_date": { "type": "string", "format": "date", "example": "2025-01-01" },
+                  "end_date": { "type": "string", "format": "date", "example": "2025-12-31" },
+                  "amount": { "type": "number", "format": "float", "minimum": 0, "example": 299.99 },
+                  "receipt_reference": { "type": "string", "maxLength": 255, "example": "TXN123456789" },
+                  "receipt_image_url": { "type": "string", "maxLength": 255, "example": "/uploads/receipt.jpg" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Subscription renewal submitted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ApiResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "subscription": { "$ref": "#/components/schemas/Subscription" },
+                            "status": { "type": "string", "example": "pending_verification" },
+                            "message": { "type": "string", "example": "Subscription created and pending verification by system administrators." }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "400": { "$ref": "#/components/responses/ValidationError" }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "System",
+      "description": "System health and status endpoints"
+    },
+    {
+      "name": "Security",
+      "description": "Security-related endpoints (CSRF tokens, etc.)"
+    },
+    {
+      "name": "Authentication",
+      "description": "User authentication and account management"
+    },
+    {
+      "name": "Organization",
+      "description": "Organization management and settings"
+    },
+    {
+      "name": "Events",
+      "description": "Event creation and management"
+    },
+    {
+      "name": "Attendance",
+      "description": "Event attendance tracking"
+    },
+    {
+      "name": "QR Codes",
+      "description": "QR code generation and scanning"
+    },
+    {
+      "name": "Subscriptions",
+      "description": "Subscription and billing management"
+    }
+  ]
+}

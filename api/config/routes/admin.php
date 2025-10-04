@@ -12,8 +12,12 @@ $router->group('/api/admin', function($router) {
     $router->post('/organizations/{id}/deactivate', 'Organization@deactivate');
     
     // Subscription Management (System-wide)
-    $router->get('/subscriptions', 'Subscription@index');
-    $router->post('/subscriptions/{id}/verify', 'Subscription@verify');
+    $router->get('/subscriptions/pending', 'SubscriptionController@pending');
+    $router->post('/subscriptions/{id}/verify', 'SubscriptionController@verify');
+    $router->post('/subscriptions/{id}/reject', 'SubscriptionController@reject');
+    $router->get('/subscriptions/stats', 'SubscriptionController@stats');
+    $router->get('/subscriptions/revenue', 'SubscriptionController@revenue');
+    $router->post('/subscriptions/auto-expire', 'SubscriptionController@autoExpire');
     
     // System-wide Audit Logs
     $router->get('/audit-logs', 'AuditLog@index');

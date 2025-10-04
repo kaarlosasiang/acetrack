@@ -10,6 +10,7 @@ $router->get('/api/org/info', 'Organization@show');
 $router->put('/api/org/info', 'Organization@update');
 $router->post('/api/org/logo', 'Organization@uploadLogo');
 $router->post('/api/org/banner', 'Organization@uploadBanner');
+$router->post('/api/org/generate-qr', 'Organization@generateMembershipQR');
 
 // Members Management
 $router->get('/api/org/members', 'OrganizationMember@index');
@@ -44,9 +45,10 @@ $router->get('/api/org/dashboard/recent-events', 'Dashboard@recentEvents');
 $router->get('/api/org/dashboard/member-stats', 'Dashboard@memberStats');
 
 // Subscription Management (for org admins)
-$router->get('/api/org/subscription', 'Subscription@show');
-$router->post('/api/org/subscription/renew', 'Subscription@renew');
-$router->post('/api/org/subscription/receipt', 'Subscription@uploadReceipt');
+$router->get('/api/org/subscription', 'SubscriptionController@show');
+$router->get('/api/org/subscription/history', 'SubscriptionController@history');
+$router->post('/api/org/subscription/renew', 'SubscriptionController@renew');
+$router->post('/api/org/subscription/{id}/receipt', 'SubscriptionController@uploadReceipt');
 
 // Organization Audit Logs
 $router->get('/api/org/audit-logs', 'AuditLog@organizationLogs');

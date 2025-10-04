@@ -22,7 +22,7 @@ class Router {
         }
         
         // Remove base path for deployment in subdirectory
-        $basePath = '/acetrack/backend';
+        $basePath = '/acetrack/api';
         if (strpos($path, $basePath) === 0) {
             $path = substr($path, strlen($basePath));
             if (empty($path)) {
@@ -73,13 +73,19 @@ class Router {
     
     // Add route to collection
     private function addRoute($method, $path, $handler, $middlewares = []) {
+        // Apply group prefix if set
+        $fullPath = ($this->currentPrefix ?? '') . $path;
+        
+        // Merge group middlewares with route-specific middlewares
+        $allMiddlewares = array_merge(($this->currentGroupMiddlewares ?? []), $middlewares);
+        
         $this->routes[] = [
             'method' => $method,
-            'path' => $path,
+            'path' => $fullPath,
             'handler' => $handler,
-            'middlewares' => $middlewares,
-            'pattern' => $this->pathToPattern($path),
-            'params' => $this->extractParams($path)
+            'middlewares' => $allMiddlewares,
+            'pattern' => $this->pathToPattern($fullPath),
+            'params' => $this->extractParams($fullPath)
         ];
     }
     
@@ -168,7 +174,19 @@ class Router {
         foreach ($middlewares as $middleware) {
             if (is_string($middleware)) {
                 $middlewareClass = $middleware;
+                
+                // Check if class exists
+                if (!class_exists($middlewareClass)) {
+                    throw new Exception("Middleware class {$middlewareClass} not found");
+                }
+                
                 $middlewareInstance = new $middlewareClass();
+                
+                // Check if handle method exists
+                if (!method_exists($middlewareInstance, 'handle')) {
+                    throw new Exception("Middleware {$middlewareClass} does not have a handle method");
+                }
+                
                 $middlewareInstance->handle();
             } elseif (is_callable($middleware)) {
                 $middleware();
@@ -257,6 +275,16 @@ class Router {
         
         // Delete - DELETE /resource/{id}
         $this->delete($basePath . '/{id}', $controllerName . '@destroy', $middlewares);
+    }
+    
+    // Debug method to list all routes
+    public function debugRoutes() {
+        foreach ($this->routes as $route) {
+            $handler = is_callable($route['handler']) ? 'Closure' : $route['handler'];
+            echo $route['method'] . ' ' . $route['path'] . ' -> ' . $handler . "\n";
+            echo 'Middlewares: ' . implode(', ', $route['middlewares']) . "\n";
+            echo 'Pattern: ' . $route['pattern'] . "\n\n";
+        }
     }
 }
 ?>

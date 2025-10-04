@@ -1,4 +1,7 @@
 <?php
+// Load environment variables
+require_once dirname(__DIR__) . '/app/Helpers/EnvLoader.php';
+
 // Error reporting for development
 error_reporting(E_ALL);
 ini_set('display_errors', 1);

@@ -50,6 +50,22 @@ class AuthController extends BaseController {
                 'name' => $user['first_name'] . ' ' . $user['last_name']
             ]);
             
+            // Send verification email
+            require_once APP_PATH . '/Helpers/EmailHelper.php';
+            $emailHelper = new EmailHelper();
+            $emailResult = $emailHelper->sendVerificationEmail(
+                $user['email'], 
+                $user['first_name'] . ' ' . $user['last_name'], 
+                $user['verification_token']
+            );
+            
+            if (!$emailResult['success']) {
+                $this->logger->warning('Verification Email Failed During Registration', [
+                    'user_id' => $user['id'],
+                    'error' => $emailResult['error']
+                ]);
+            }
+            
             $this->success([
                 'user' => [
                     'id' => $user['id'],
@@ -58,8 +74,8 @@ class AuthController extends BaseController {
                     'email' => $user['email'],
                     'status' => $user['status']
                 ],
-                'verification_token' => $user['verification_token'] // In production, send via email
-            ], 'User registered successfully. Please verify your email.');
+                'email_sent' => $emailResult['success']
+            ], 'User registered successfully. Please check your email to verify your account.');
             
         } catch (Exception $e) {
             $this->error('Registration failed: ' . $e->getMessage(), 500);
@@ -129,11 +145,24 @@ class AuthController extends BaseController {
         $this->requireAuth();
         
         try {
+            // Get the current JWT token from header
+            $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+            $token = null;
+            
+            if (preg_match('/Bearer\s+(\S+)/', $authHeader, $matches)) {
+                $token = $matches[1];
+            }
+            
+            // Blacklist the token
+            if ($token) {
+                require_once APP_PATH . '/Helpers/SecurityHelper.php';
+                $securityHelper = new SecurityHelper();
+                $securityHelper->blacklistToken($token, 'logout');
+            }
+            
             // Log the logout
             $this->logAudit('user_logout', 'User', $this->currentUser['id']);
             
-            // In a production system, you might want to blacklist the token
-            // For now, we'll just return success
             $this->success(null, 'Logout successful');
             
         } catch (Exception $e) {
@@ -207,10 +236,24 @@ class AuthController extends BaseController {
             // Log the password reset request
             $this->logAudit('password_reset_requested', 'User', $user['id']);
             
-            // In production, send email with reset link
-            $this->success([
-                'reset_token' => $resetToken // Remove this in production
-            ], 'Password reset token generated. Check your email for instructions.');
+            // Send password reset email
+            require_once APP_PATH . '/Helpers/EmailHelper.php';
+            $emailHelper = new EmailHelper();
+            $emailResult = $emailHelper->sendPasswordResetEmail(
+                $user['email'], 
+                $user['first_name'] . ' ' . $user['last_name'], 
+                $resetToken
+            );
+            
+            if (!$emailResult['success']) {
+                $this->logger->warning('Password Reset Email Failed', [
+                    'user_id' => $user['id'],
+                    'error' => $emailResult['error']
+                ]);
+            }
+            
+            // Always return success for security reasons
+            $this->success(null, 'If the email exists, a password reset link has been sent.');
             
         } catch (Exception $e) {
             $this->error('Password reset request failed: ' . $e->getMessage(), 500);
@@ -329,10 +372,20 @@ class AuthController extends BaseController {
             // Log the resend verification
             $this->logAudit('verification_resent', 'User', $user['id']);
             
-            // In production, send email with verification link
-            $this->success([
-                'verification_token' => $newToken // Remove this in production
-            ], 'Verification email has been resent');
+            // Send verification email
+            require_once APP_PATH . '/Helpers/EmailHelper.php';
+            $emailHelper = new EmailHelper();
+            $emailResult = $emailHelper->sendVerificationEmail(
+                $user['email'], 
+                $user['first_name'] . ' ' . $user['last_name'], 
+                $newToken
+            );
+            
+            if ($emailResult['success']) {
+                $this->success(null, 'Verification email has been resent');
+            } else {
+                $this->error('Failed to send verification email: ' . $emailResult['error']);
+            }
             
         } catch (Exception $e) {
             $this->error('Failed to resend verification: ' . $e->getMessage(), 500);
