@@ -10,9 +10,10 @@ session_start();
 header('Content-Type: application/json');
 
 // Enable CORS for development
-header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Origin: http://localhost:1234');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-CSRF-TOKEN');
+header('Access-Control-Allow-Credentials: true');
 
 // Handle preflight OPTIONS requests
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
@@ -23,13 +24,12 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
 try {
     // Initialize router
     $router = new Router();
-    
+
     // Load routes
     require_once 'config/routes.php';
-    
+
     // Resolve and dispatch the current route
     $router->dispatch();
-    
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode([
@@ -40,4 +40,3 @@ try {
 }
 
 ob_end_flush();
-?>

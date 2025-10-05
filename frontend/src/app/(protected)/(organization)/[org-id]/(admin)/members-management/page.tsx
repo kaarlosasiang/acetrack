@@ -3,5 +3,5 @@ export default function AdminMembersPage() {
     <div>
       <h1>Admin Members Page</h1>
     </div>
-  )
+  );
 }

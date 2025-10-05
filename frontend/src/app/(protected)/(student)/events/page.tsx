@@ -3,5 +3,5 @@ export default function StudentEventsPage() {
     <div>
       <h1>Student Events Page</h1>
     </div>
-  )
+  );
 }

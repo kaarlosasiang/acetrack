@@ -1,0 +1,73 @@
+{
+  // Enable ESLint for TypeScript and JavaScript files
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+
+  // Auto-fix ESLint errors on save
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit",
+    "source.removeUnusedImports": "explicit"
+  },
+
+  // Format on save
+  "editor.formatOnSave": true,
+
+  // Set default formatter for TypeScript/JavaScript files
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    }
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    }
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    }
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    }
+  },
+
+  // Show ESLint status in status bar
+  "eslint.statusBarItem": true,
+
+  // Auto-save files
+  "files.autoSave": "onFocusChange",
+
+  // Trim trailing whitespace on save
+  "files.trimTrailingWhitespace": true,
+
+  // Insert final newline
+  "files.insertFinalNewline": true,
+
+  // Trim final newlines
+  "files.trimFinalNewlines": true,
+
+  // ESLint working directories
+  "eslint.workingDirectories": ["frontend"],
+
+  // Enable ESLint for the entire workspace
+  "eslint.enable": true,
+
+  // Show inline errors
+  "eslint.showInlineError": true
+}

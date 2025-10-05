@@ -6,7 +6,9 @@ export default function StudentMyQRPage() {
         <p className="text-lg text-gray-600">Here is your personal QR code.</p>
       </main>
       <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <p className="text-sm text-gray-500">© 2024 AceTrack. All rights reserved.</p>
+        <p className="text-sm text-gray-500">
+          © 2024 AceTrack. All rights reserved.
+        </p>
       </footer>
     </div>
   );

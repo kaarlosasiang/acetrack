@@ -1,13 +1,30 @@
+"use client";
+
+import { CSRFDebug } from "@/components/debug/csrf-debug";
+import { LoginForm } from "@/components/foms/login-form/form";
+import { BackgroundRippleEffect } from "@/components/ui/background-ripple-effect";
+import { useEffect } from "react";
+import { toast } from "sonner";
+
 export default function LoginPage() {
+  useEffect(() => {
+    // Check for session expired message
+    const sessionExpiredMessage = localStorage.getItem("session_expired_toast");
+    if (sessionExpiredMessage) {
+      toast.error(sessionExpiredMessage);
+      localStorage.removeItem("session_expired_toast");
+    }
+  }, []);
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <h1 className="text-3xl font-bold">Login</h1>
-        <p className="text-lg text-gray-600">Please enter your credentials to log in.</p>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <p className="text-sm text-gray-500">© 2024 AceTrack. All rights reserved.</p>
-      </footer>
+    <div className="relative flex w-full flex-col items-start justify-start overflow-hidden">
+      <BackgroundRippleEffect />
+      <div className="min-h-svh w-full bg-background flex flex-col items-center justify-center gap-6 p-6 md:p-10">
+        <div className="w-full max-w-sm">
+          <LoginForm />
+        </div>
+      </div>
+      <CSRFDebug />
     </div>
   );
 }
