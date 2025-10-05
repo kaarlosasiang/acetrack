@@ -167,17 +167,11 @@ const createAPIService = (url = "") => {
         originalRequest._retry = true;
 
         try {
-          // Get refresh token
-          const refresh_token = localStorage.getItem("refresh_token");
-
-          if (!refresh_token) {
-            throw new Error("No refresh token available");
-          }
-
-          // Attempt to refresh the access token using your backend's endpoint
+          // Attempt to refresh the access token using HTTPOnly cookie
+          // No need to send refresh token - it's handled via cookie
           const { data } = await axios.post(
             `${baseURL}/api/auth/refresh`,
-            { refresh_token },
+            {}, // Empty body - refresh token comes from cookie
             {
               withCredentials: true,
               headers: {
@@ -202,7 +196,6 @@ const createAPIService = (url = "") => {
         } catch (refreshError: any) {
           // Handle refresh token error - remove tokens and redirect
           localStorage.removeItem("access_token");
-          localStorage.removeItem("refresh_token");
 
           // Call logout endpoint to clean up server-side session
           try {
@@ -247,8 +240,8 @@ const createAPIService = (url = "") => {
     return `${baseURL}/${cleanMethod}`;
   };
 
-  const get = async (method: string) => {
-    const response = await instance.get(buildURL(method));
+  const get = async (method: string, config?: any) => {
+    const response = await instance.get(buildURL(method), config);
     return response;
   };
 

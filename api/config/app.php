@@ -25,6 +25,11 @@ define('PUBLIC_PATH', APP_ROOT . '/public');
 define('JWT_SECRET', 'your-super-secret-jwt-key-change-this-in-production');
 define('JWT_EXPIRE_TIME', 3600 * 24 * 7); // 7 days
 
+// Cookie Configuration
+define('COOKIE_DOMAIN', ''); // Set to your domain for production (e.g., '.yourdomain.com')
+define('COOKIE_SECURE', false); // Set to true in production with HTTPS
+define('COOKIE_SAMESITE', 'Lax'); // Lax, Strict, or None
+
 // File upload settings
 define('MAX_UPLOAD_SIZE', 5 * 1024 * 1024); // 5MB
 define('ALLOWED_IMAGE_TYPES', ['jpg', 'jpeg', 'png', 'gif', 'webp']);
@@ -47,7 +52,7 @@ spl_autoload_register(function ($className) {
         APP_PATH . '/Helpers/',
         APP_ROOT . '/'
     ];
-    
+
     foreach ($paths as $path) {
         $file = $path . $className . '.php';
         if (file_exists($file)) {
@@ -56,4 +61,3 @@ spl_autoload_register(function ($className) {
         }
     }
 });
-?>

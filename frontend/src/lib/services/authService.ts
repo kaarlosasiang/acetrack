@@ -56,7 +56,6 @@ export interface AuthResponse {
       last_login_at?: string;
     };
     access_token: string;
-    refresh_token: string;
     token_type: "Bearer";
     expires_in: number;
   };
@@ -77,10 +76,10 @@ class AuthService {
   async login(loginData: LoginData): Promise<AuthResponse> {
     const response = await api.post(loginData, "auth/login");
 
-    // Store tokens in localStorage
+    // Store access token and user data in localStorage
+    // Refresh token is now handled as HTTPOnly cookie by the backend
     if (response.data.success && response.data.data) {
       localStorage.setItem("access_token", response.data.data.access_token);
-      localStorage.setItem("refresh_token", response.data.data.refresh_token);
       localStorage.setItem("user", JSON.stringify(response.data.data.user));
     }
 
@@ -102,16 +101,14 @@ class AuthService {
     try {
       const response = await api.post({}, "api/auth/logout");
 
-      // Clear local storage
+      // Clear local storage (refresh token cookie is cleared by backend)
       localStorage.removeItem("access_token");
-      localStorage.removeItem("refresh_token");
       localStorage.removeItem("user");
 
       return response.data;
     } catch (error) {
       // Even if logout fails on backend, clear local storage
       localStorage.removeItem("access_token");
-      localStorage.removeItem("refresh_token");
       localStorage.removeItem("user");
       throw error;
     }
@@ -127,13 +124,8 @@ class AuthService {
       expires_in: number;
     }>
   > {
-    const refresh_token = localStorage.getItem("refresh_token");
-
-    if (!refresh_token) {
-      throw new Error("No refresh token available");
-    }
-
-    const response = await api.post({ refresh_token }, "api/auth/refresh");
+    // No need to send refresh token - it's handled via HTTPOnly cookie
+    const response = await api.post({}, "api/auth/refresh");
 
     // Update access token
     if (response.data.success && response.data.data?.access_token) {
@@ -212,13 +204,6 @@ class AuthService {
    */
   getAccessToken(): string | null {
     return localStorage.getItem("access_token");
-  }
-
-  /**
-   * Get refresh token
-   */
-  getRefreshToken(): string | null {
-    return localStorage.getItem("refresh_token");
   }
 }
 

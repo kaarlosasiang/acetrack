@@ -1,4 +1,5 @@
 # env files (can opt-in for committing if needed)
 .env*
 
-/csrf_tokens
+# CSRF tokens storage
+/storage/csrf_tokens/*

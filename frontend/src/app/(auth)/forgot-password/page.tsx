@@ -1,4 +1,17 @@
+"use client";
+
+import { AuthPageLoading } from "@/components/common/auth-loading";
+import { useGuestGuard } from "@/lib/hooks/useAuthGuard";
+
 export default function ForgotPasswordPage() {
+  // Redirect to dashboard if user is already authenticated
+  const { isLoading } = useGuestGuard();
+
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return <AuthPageLoading message="Redirecting..." />;
+  }
+
   return (
     <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">

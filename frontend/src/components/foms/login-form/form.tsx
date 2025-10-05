@@ -8,13 +8,11 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import authService from "@/lib/services/authService";
+import { useAuth } from "@/lib/contexts/authContext";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
 import { LoginFormSchema, LoginFormSchemaType } from "./schema";
 import { LoginFormInterface } from "./types";
 
@@ -22,7 +20,7 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const router = useRouter();
+  const { login } = useAuth();
 
   const {
     register,
@@ -38,42 +36,10 @@ export function LoginForm({
   });
 
   const onSubmit = async (data: LoginFormSchemaType) => {
-    try {
-      const response = await authService.login({
-        email: data.email,
-        password: data.password,
-      });
-
-      if (response.success) {
-        toast.success(response.message || "Login successful!");
-
-        // Redirect based on user role or to dashboard
-        const user = response.data.user;
-        if (user.role === "super_admin") {
-          router.push("/super-admin");
-        } else if (user.role === "student") {
-          router.push("/student");
-        } else {
-          router.push("/dashboard");
-        }
-      } else {
-        toast.error(response.message || "Login failed");
-      }
-    } catch (error: any) {
-      if (error.response?.data?.message) {
-        toast.error(error.response.data.message);
-      } else if (error.response?.data?.errors) {
-        // Handle validation errors
-        const errors = error.response.data.errors;
-        Object.keys(errors).forEach(key => {
-          if (errors[key] && errors[key].length > 0) {
-            toast.error(`${key}: ${errors[key][0]}`);
-          }
-        });
-      } else {
-        toast.error("An error occurred during login. Please try again.");
-      }
-    }
+    await login({
+      email: data.email,
+      password: data.password,
+    });
   };
 
   return (

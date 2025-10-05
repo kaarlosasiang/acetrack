@@ -1,5 +1,6 @@
 "use client";
 
+import { AuthProvider } from "@/lib/contexts/authContext";
 import csrfService from "@/lib/services/csrfService";
 import { useEffect } from "react";
 import { Toaster } from "sonner";
@@ -14,7 +15,7 @@ export function ClientProviders({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <>
+    <AuthProvider>
       {children}
       <Toaster
         position="top-right"
@@ -27,6 +28,6 @@ export function ClientProviders({ children }: { children: React.ReactNode }) {
           },
         }}
       />
-    </>
+    </AuthProvider>
   );
 }
