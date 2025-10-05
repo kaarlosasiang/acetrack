@@ -40,7 +40,7 @@ export default function NoAccessPage() {
           <p className="text-gray-600">
             You don&apos;t have permission to access this area.
           </p>
-          
+
           {user && (
             <div className="text-sm text-gray-500 bg-gray-100 p-3 rounded">
               <p>
@@ -59,12 +59,12 @@ export default function NoAccessPage() {
               <Home className="h-4 w-4 mr-2" />
               Go to Dashboard
             </Button>
-            
+
             <Button variant="outline" onClick={handleGoBack} className="w-full">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Go Back
             </Button>
-            
+
             <Link href="/login" className="w-full">
               <Button variant="ghost" className="w-full">
                 Login as Different User

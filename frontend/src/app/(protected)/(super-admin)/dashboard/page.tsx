@@ -48,15 +48,21 @@ export default function SuperAdminDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full max-w-4xl">
           <div className="bg-white p-6 rounded-lg shadow-md border">
             <h3 className="text-lg font-semibold mb-2">System Overview</h3>
-            <p className="text-gray-600">Monitor system-wide metrics and performance</p>
+            <p className="text-gray-600">
+              Monitor system-wide metrics and performance
+            </p>
           </div>
           <div className="bg-white p-6 rounded-lg shadow-md border">
             <h3 className="text-lg font-semibold mb-2">User Management</h3>
-            <p className="text-gray-600">Manage all users and their permissions</p>
+            <p className="text-gray-600">
+              Manage all users and their permissions
+            </p>
           </div>
           <div className="bg-white p-6 rounded-lg shadow-md border">
             <h3 className="text-lg font-semibold mb-2">Organizations</h3>
-            <p className="text-gray-600">Oversee all organizations and subscriptions</p>
+            <p className="text-gray-600">
+              Oversee all organizations and subscriptions
+            </p>
           </div>
         </div>
       </main>

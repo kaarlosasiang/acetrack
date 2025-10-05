@@ -27,7 +27,7 @@ export default function OrganizationDashboardPage() {
     if (!isLoading && isAuthenticated && user) {
       // Check if user should be on this dashboard
       const expectedDashboard = getDashboardUrl(user);
-      
+
       // If this is not their expected dashboard, redirect
       if (expectedDashboard !== "/organization-dashboard") {
         router.push(expectedDashboard);
@@ -76,7 +76,11 @@ export default function OrganizationDashboardPage() {
   }
 
   // Show nothing if not authorized (will be redirected)
-  if (!isAuthenticated || !user || getDashboardUrl(user) !== "/organization-dashboard") {
+  if (
+    !isAuthenticated ||
+    !user ||
+    getDashboardUrl(user) !== "/organization-dashboard"
+  ) {
     return null;
   }
 

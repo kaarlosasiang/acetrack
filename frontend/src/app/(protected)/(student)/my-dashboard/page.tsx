@@ -14,7 +14,7 @@ export default function StudentDashboardPage() {
     if (!isLoading && isAuthenticated && user) {
       // Check if user should be on this dashboard
       const expectedDashboard = getDashboardUrl(user);
-      
+
       // If user is super admin or org admin, redirect to their appropriate dashboard
       if (expectedDashboard !== "/my-dashboard") {
         router.push(expectedDashboard);
@@ -46,7 +46,9 @@ export default function StudentDashboardPage() {
     return null;
   }
 
-  const primaryOrg = user.organizations?.find(org => org.membership_status === "active");
+  const primaryOrg = user.organizations?.find(
+    org => org.membership_status === "active"
+  );
 
   return (
     <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
@@ -67,27 +69,37 @@ export default function StudentDashboardPage() {
             </p>
           )}
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full max-w-4xl">
           <div className="bg-white p-6 rounded-lg shadow-md border">
             <h3 className="text-lg font-semibold mb-2">My Events</h3>
-            <p className="text-gray-600">View events you&apos;re attending or have attended</p>
+            <p className="text-gray-600">
+              View events you&apos;re attending or have attended
+            </p>
           </div>
           <div className="bg-white p-6 rounded-lg shadow-md border">
             <h3 className="text-lg font-semibold mb-2">My QR Code</h3>
-            <p className="text-gray-600">Access your personal QR code for check-ins</p>
+            <p className="text-gray-600">
+              Access your personal QR code for check-ins
+            </p>
           </div>
           <div className="bg-white p-6 rounded-lg shadow-md border">
             <h3 className="text-lg font-semibold mb-2">Attendance History</h3>
-            <p className="text-gray-600">Track your event attendance and participation</p>
+            <p className="text-gray-600">
+              Track your event attendance and participation
+            </p>
           </div>
           <div className="bg-white p-6 rounded-lg shadow-md border">
             <h3 className="text-lg font-semibold mb-2">Profile Settings</h3>
-            <p className="text-gray-600">Update your personal information and preferences</p>
+            <p className="text-gray-600">
+              Update your personal information and preferences
+            </p>
           </div>
           <div className="bg-white p-6 rounded-lg shadow-md border">
             <h3 className="text-lg font-semibold mb-2">Notifications</h3>
-            <p className="text-gray-600">View announcements and important updates</p>
+            <p className="text-gray-600">
+              View announcements and important updates
+            </p>
           </div>
           <div className="bg-white p-6 rounded-lg shadow-md border">
             <h3 className="text-lg font-semibold mb-2">Organization Info</h3>
