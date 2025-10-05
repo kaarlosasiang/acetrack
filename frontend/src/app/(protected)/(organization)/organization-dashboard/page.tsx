@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/lib/contexts/authContext";
+import { getDashboardUrl } from "@/lib/utils/dashboardRouter";
 import {
   BarChart3,
   Bell,
@@ -14,21 +15,57 @@ import {
   Shield,
   Users,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function OrganizationDashboardPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const [primaryOrg, setPrimaryOrg] = useState<any>(null);
+  const router = useRouter();
 
   useEffect(() => {
-    if (user?.organizations && user.organizations.length > 0) {
-      // Find the primary organization (first active admin role or first organization)
-      const adminOrg = user.organizations.find(
-        org => org.role === "admin" && org.membership_status === "active"
+    if (!isLoading && isAuthenticated && user) {
+      // Check if user should be on this dashboard
+      const expectedDashboard = getDashboardUrl(user);
+      
+      // If this is not their expected dashboard, redirect
+      if (expectedDashboard !== "/organization-dashboard") {
+        router.push(expectedDashboard);
+        return;
+      }
+
+      // Super admins can access organization features
+      if (user.is_super_admin === 1) {
+        // Set a default org or show all orgs for super admin
+        if (user.organizations && user.organizations.length > 0) {
+          setPrimaryOrg(user.organizations[0]);
+        }
+        return;
+      }
+
+      // Check if user has admin role in any organization
+      const hasAdminRole = user.organizations?.some(
+        org =>
+          (org.role === "admin" || org.role === "org_subadmin") &&
+          org.membership_status === "active"
       );
-      setPrimaryOrg(adminOrg || user.organizations[0]);
+
+      if (!hasAdminRole) {
+        router.push("/no-access");
+        return;
+      }
+
+      // Find the primary organization (first active admin role)
+      if (user.organizations && user.organizations.length > 0) {
+        const adminOrg = user.organizations.find(
+          org =>
+            (org.role === "admin" || org.role === "org_subadmin") &&
+            org.membership_status === "active"
+        );
+        setPrimaryOrg(adminOrg || user.organizations[0]);
+      }
     }
-  }, [user]);
+  }, [user, isLoading, isAuthenticated, router]);
 
   if (isLoading) {
     return (
@@ -38,18 +75,9 @@ export default function OrganizationDashboardPage() {
     );
   }
 
-  if (!isAuthenticated || !user) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Card className="w-full max-w-md">
-          <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">
-              Please log in to access the organization dashboard.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
+  // Show nothing if not authorized (will be redirected)
+  if (!isAuthenticated || !user || getDashboardUrl(user) !== "/organization-dashboard") {
+    return null;
   }
 
   const getRoleBadgeVariant = (role: string) => {
@@ -81,19 +109,26 @@ export default function OrganizationDashboardPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Organization Dashboard
-          </h1>
+          <div className="flex items-center gap-2 mb-2">
+            <h1 className="text-3xl font-bold tracking-tight">
+              Organization Dashboard
+            </h1>
+            {user.is_super_admin === 1 ? (
+              <Badge variant="destructive" className="flex items-center gap-1">
+                <Crown className="h-3 w-3" />
+                Super Admin
+              </Badge>
+            ) : (
+              <Badge variant="default" className="flex items-center gap-1">
+                <Shield className="h-3 w-3" />
+                {primaryOrg?.role === "admin" ? "Admin" : "Sub Admin"}
+              </Badge>
+            )}
+          </div>
           <p className="text-muted-foreground">
             Welcome back, {user.first_name} {user.last_name}
           </p>
         </div>
-        {user.is_super_admin === 1 && (
-          <Badge variant="destructive" className="flex items-center gap-1">
-            <Crown className="h-3 w-3" />
-            Super Admin
-          </Badge>
-        )}
       </div>
 
       {/* User Info Card */}
