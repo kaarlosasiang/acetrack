@@ -1,5 +1,6 @@
 "use client";
 
+import StudentNavBar from "@/components/layouts/StudentNavBar";
 import { useAuthGuard } from "@/lib/hooks/useAuthGuard";
 import React from "react";
 
@@ -20,5 +21,10 @@ export default function StudentLayout({
   }
 
   // If user is authenticated, render the student content
-  return <>{children}</>;
+  return (
+    <>
+      <StudentNavBar />
+      {children}
+    </>
+  );
 }
