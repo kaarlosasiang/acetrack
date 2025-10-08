@@ -28,8 +28,8 @@ import { Input } from "../ui/input";
 
 export default function StudentNavBar() {
   return (
-    <Container className="py-4">
-      <div className="flex justify-between items-center">
+    <div className="py-2 border-b border-gray-200">
+      <Container className="flex justify-between items-center">
         <Image
           src="/images/acetrack-logo.png"
           alt="Student Portal Logo"
@@ -51,7 +51,7 @@ export default function StudentNavBar() {
           >
             <Bell className="size-5" />
           </Button>
-          <div className="relative flex items-center gap-4 py-1 px-2 bg-accent rounded-lg">
+          <div className="relative flex items-center gap-4 py-1 pl-2 pr-1 bg-accent rounded-lg">
             <Tooltip>
               <TooltipTrigger>
                 <div className="text-red-600 flex items-center">
@@ -144,7 +144,7 @@ export default function StudentNavBar() {
             </DropdownMenu>
           </div>
         </div>
-      </div>
-    </Container>
+      </Container>
+    </div>
   );
 }

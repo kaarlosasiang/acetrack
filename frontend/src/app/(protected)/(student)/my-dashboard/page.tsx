@@ -206,7 +206,7 @@ export default function StudentDashboardPage() {
   );
 
   return (
-    <div className="relative min-h-screen bg-background overflow-hidden">
+    <div className="relative min-h-screen bg-gray-50 overflow-hidden">
       {/* Subtle Background Icons */}
       <IconsBackground />
       {/* Content */}
