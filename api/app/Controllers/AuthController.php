@@ -37,7 +37,7 @@ class AuthController extends BaseController
                 'phone_number' => $input['phone_number'] ?? null,
                 'course' => $input['course'] ?? null,
                 'year_level' => $input['year_level'] ?? null,
-                'status' => 'pending' // Requires email verification
+                'status' => 'active' // Direct activation without email verification
             ];
 
             $user = $userModel->createUser($userData);
@@ -52,23 +52,24 @@ class AuthController extends BaseController
                 'name' => $user['first_name'] . ' ' . $user['last_name']
             ]);
 
+            // Email verification disabled to save email quota
             // Send verification email
-            require_once APP_PATH . '/Helpers/EmailHelper.php';
-            $emailHelper = new EmailHelper();
-            $emailResult = $emailHelper->sendVerificationEmail(
-                $user['email'],
-                $user['first_name'] . ' ' . $user['last_name'],
-                $user['verification_token']
-            );
+            // require_once APP_PATH . '/Helpers/EmailHelper.php';
+            // $emailHelper = new EmailHelper();
+            // $emailResult = $emailHelper->sendVerificationEmail(
+            //     $user['email'],
+            //     $user['first_name'] . ' ' . $user['last_name'],
+            //     $user['verification_token']
+            // );
 
-            if (!$emailResult['success']) {
-                require_once APP_PATH . '/Helpers/Logger.php';
-                $logger = new Logger();
-                $logger->warning('Verification Email Failed During Registration', [
-                    'user_id' => $user['id'],
-                    'error' => $emailResult['error']
-                ]);
-            }
+            // if (!$emailResult['success']) {
+            //     require_once APP_PATH . '/Helpers/Logger.php';
+            //     $logger = new Logger();
+            //     $logger->warning('Verification Email Failed During Registration', [
+            //         'user_id' => $user['id'],
+            //         'error' => $emailResult['error']
+            //     ]);
+            // }
 
             $this->success([
                 'user' => [
@@ -78,8 +79,8 @@ class AuthController extends BaseController
                     'email' => $user['email'],
                     'status' => $user['status']
                 ],
-                'email_sent' => $emailResult['success']
-            ], 'User registered successfully. Please check your email to verify your account.');
+                'email_sent' => false // Email verification disabled
+            ], 'User registered successfully. Account is now active.');
         } catch (Exception $e) {
             $this->error('Registration failed: ' . $e->getMessage(), 500);
         }
@@ -111,10 +112,11 @@ class AuthController extends BaseController
                 $this->error('Invalid email or password', 401);
             }
 
+            // Email verification disabled - allow login regardless of status
             // Check if user is active
-            if ($user['status'] !== 'active') {
-                $this->error('Account is not active. Please verify your email or contact support.', 401);
-            }
+            // if ($user['status'] !== 'active') {
+            //     $this->error('Account is not active. Please verify your email or contact support.', 401);
+            // }
 
             // Update last login
             $userModel->updateLastLogin($user['id']);
@@ -331,9 +333,13 @@ class AuthController extends BaseController
         }
     }
 
-    // Verify email
+    // Verify email - DISABLED
     public function verifyEmail($params = [])
     {
+        // Email verification has been disabled to save email quota
+        $this->error('Email verification has been disabled. All accounts are automatically active.', 400);
+
+        /* ORIGINAL CODE - COMMENTED OUT
         try {
             $input = $this->getInput();
 
@@ -363,11 +369,16 @@ class AuthController extends BaseController
         } catch (Exception $e) {
             $this->error('Email verification failed: ' . $e->getMessage(), 500);
         }
+        */
     }
 
-    // Resend verification email
+    // Resend verification email - DISABLED
     public function resendVerification($params = [])
     {
+        // Email verification has been disabled to save email quota
+        $this->error('Email verification has been disabled. All accounts are automatically active.', 400);
+
+        /* ORIGINAL CODE - COMMENTED OUT
         try {
             $input = $this->getInput();
 
@@ -419,6 +430,7 @@ class AuthController extends BaseController
         } catch (Exception $e) {
             $this->error('Failed to resend verification: ' . $e->getMessage(), 500);
         }
+        */
     }
 
     // Set refresh token as HTTPOnly cookie

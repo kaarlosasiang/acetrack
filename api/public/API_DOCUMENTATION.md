@@ -39,15 +39,15 @@ Authorization: Bearer <your_jwt_token>
 
 ## Rate Limits
 
-| Endpoint Type | Method | Limit |
-|---------------|--------|-------|
-| Authentication | POST | 5 per 15 minutes |
-| Registration | POST | 3 per hour |
-| Password Reset | POST | 5 per hour |
-| File Upload | POST | 20 per hour |
-| Email Operations | POST | 10 per hour |
-| API Mutations | POST/PUT/DELETE | 100 per hour |
-| API Reads | GET | 300 per hour |
+| Endpoint Type    | Method          | Limit            |
+| ---------------- | --------------- | ---------------- |
+| Authentication   | POST            | 5 per 15 minutes |
+| Registration     | POST            | 3 per hour       |
+| Password Reset   | POST            | 5 per hour       |
+| File Upload      | POST            | 20 per hour      |
+| Email Operations | POST            | 10 per hour      |
+| API Mutations    | POST/PUT/DELETE | 100 per hour     |
+| API Reads        | GET             | 300 per hour     |
 
 ---
 
@@ -57,10 +57,11 @@ Authorization: Bearer <your_jwt_token>
 
 Create a new user account.
 
-**Endpoint**: `POST /auth/register`  
+**Endpoint**: `POST /auth/register`
 **Authentication**: Not required
 
 **Request Body**:
+
 ```json
 {
   "first_name": "John",
@@ -75,19 +76,20 @@ Create a new user account.
 ```
 
 **Response** (201 Created):
+
 ```json
 {
   "success": true,
-  "message": "User registered successfully. Please check your email to verify your account.",
+  "message": "User registered successfully. Account is now active.",
   "data": {
     "user": {
       "id": 1,
       "first_name": "John",
       "last_name": "Doe",
       "email": "john.doe@example.com",
-      "status": "pending"
+      "status": "active"
     },
-    "email_sent": true
+    "email_sent": false
   }
 }
 ```
@@ -96,10 +98,11 @@ Create a new user account.
 
 Authenticate and receive access token.
 
-**Endpoint**: `POST /auth/login`  
+**Endpoint**: `POST /auth/login`
 **Authentication**: Not required
 
 **Request Body**:
+
 ```json
 {
   "email": "john.doe@example.com",
@@ -108,6 +111,7 @@ Authenticate and receive access token.
 ```
 
 **Response** (200 OK):
+
 ```json
 {
   "success": true,
@@ -132,10 +136,11 @@ Authenticate and receive access token.
 
 Invalidate the current session token.
 
-**Endpoint**: `POST /auth/logout`  
+**Endpoint**: `POST /auth/logout`
 **Authentication**: Required
 
 **Response** (200 OK):
+
 ```json
 {
   "success": true,
@@ -147,10 +152,11 @@ Invalidate the current session token.
 
 Request password reset token.
 
-**Endpoint**: `POST /auth/forgot-password`  
+**Endpoint**: `POST /auth/forgot-password`
 **Authentication**: Not required
 
 **Request Body**:
+
 ```json
 {
   "email": "john.doe@example.com"
@@ -158,6 +164,7 @@ Request password reset token.
 ```
 
 **Response** (200 OK):
+
 ```json
 {
   "success": true,
@@ -169,10 +176,11 @@ Request password reset token.
 
 Reset password using token.
 
-**Endpoint**: `POST /auth/reset-password`  
+**Endpoint**: `POST /auth/reset-password`
 **Authentication**: Not required
 
 **Request Body**:
+
 ```json
 {
   "token": "password_reset_token_here",
@@ -182,6 +190,7 @@ Reset password using token.
 ```
 
 **Response** (200 OK):
+
 ```json
 {
   "success": true,
@@ -197,10 +206,11 @@ Reset password using token.
 
 Get current organization details.
 
-**Endpoint**: `GET /api/org/info`  
+**Endpoint**: `GET /api/org/info`
 **Authentication**: Required (Member)
 
 **Response** (200 OK):
+
 ```json
 {
   "success": true,
@@ -221,11 +231,12 @@ Get current organization details.
 
 Update organization information.
 
-**Endpoint**: `PUT /api/org/info`  
-**Authentication**: Required (Admin)  
+**Endpoint**: `PUT /api/org/info`
+**Authentication**: Required (Admin)
 **CSRF**: Required
 
 **Request Body**:
+
 ```json
 {
   "name": "Updated Tech Student Club",
@@ -234,6 +245,7 @@ Update organization information.
 ```
 
 **Response** (200 OK):
+
 ```json
 {
   "success": true,
@@ -251,11 +263,12 @@ Update organization information.
 
 Generate QR code for membership registration.
 
-**Endpoint**: `POST /api/org/generate-qr`  
-**Authentication**: Required (Admin)  
+**Endpoint**: `POST /api/org/generate-qr`
+**Authentication**: Required (Admin)
 **CSRF**: Required
 
 **Request Body**:
+
 ```json
 {
   "expires_in_days": 7
@@ -263,6 +276,7 @@ Generate QR code for membership registration.
 ```
 
 **Response** (200 OK):
+
 ```json
 {
   "success": true,
@@ -288,15 +302,17 @@ Generate QR code for membership registration.
 
 Get paginated list of events.
 
-**Endpoint**: `GET /api/events`  
-**Authentication**: Required  
+**Endpoint**: `GET /api/events`
+**Authentication**: Required
 **Query Parameters**:
+
 - `page` (int): Page number (default: 1)
 - `per_page` (int): Items per page (default: 20, max: 100)
 - `status` (string): Filter by status (`draft`, `published`, `cancelled`)
 - `search` (string): Search by name or description
 
 **Response** (200 OK):
+
 ```json
 {
   "success": true,
@@ -333,11 +349,12 @@ Get paginated list of events.
 
 Create a new event.
 
-**Endpoint**: `POST /api/events`  
-**Authentication**: Required (Admin/Sub-Admin)  
+**Endpoint**: `POST /api/events`
+**Authentication**: Required (Admin/Sub-Admin)
 **CSRF**: Required
 
 **Request Body**:
+
 ```json
 {
   "name": "New Tech Meetup",
@@ -351,6 +368,7 @@ Create a new event.
 ```
 
 **Response** (201 Created):
+
 ```json
 {
   "success": true,
@@ -373,11 +391,12 @@ Create a new event.
 
 Generate QR code for event attendance.
 
-**Endpoint**: `POST /api/events/{id}/qr`  
-**Authentication**: Required (Admin/Sub-Admin)  
+**Endpoint**: `POST /api/events/{id}/qr`
+**Authentication**: Required (Admin/Sub-Admin)
 **CSRF**: Required
 
 **Response** (200 OK):
+
 ```json
 {
   "success": true,
@@ -402,11 +421,12 @@ Generate QR code for event attendance.
 
 Check in to an event (member action).
 
-**Endpoint**: `POST /api/attendance/check-in`  
-**Authentication**: Required  
+**Endpoint**: `POST /api/attendance/check-in`
+**Authentication**: Required
 **CSRF**: Required
 
 **Request Body**:
+
 ```json
 {
   "event_id": 1,
@@ -415,6 +435,7 @@ Check in to an event (member action).
 ```
 
 **Response** (200 OK):
+
 ```json
 {
   "success": true,
@@ -434,11 +455,12 @@ Check in to an event (member action).
 
 Check out from an event.
 
-**Endpoint**: `POST /api/attendance/check-out`  
-**Authentication**: Required  
+**Endpoint**: `POST /api/attendance/check-out`
+**Authentication**: Required
 **CSRF**: Required
 
 **Request Body**:
+
 ```json
 {
   "event_id": 1
@@ -446,6 +468,7 @@ Check out from an event.
 ```
 
 **Response** (200 OK):
+
 ```json
 {
   "success": true,
@@ -463,12 +486,14 @@ Check out from an event.
 
 Get attendance report for an event (admin only).
 
-**Endpoint**: `GET /api/attendance/report/{event_id}`  
-**Authentication**: Required (Admin)  
+**Endpoint**: `GET /api/attendance/report/{event_id}`
+**Authentication**: Required (Admin)
 **Query Parameters**:
+
 - `export` (string): Export format (`csv`, `excel`)
 
 **Response** (200 OK):
+
 ```json
 {
   "success": true,
@@ -509,10 +534,11 @@ Get attendance report for an event (admin only).
 
 Process QR code scan (public endpoint).
 
-**Endpoint**: `GET /api/qr/scan/{token}`  
+**Endpoint**: `GET /api/qr/scan/{token}`
 **Authentication**: Optional
 
 **Response** (200 OK) - Event Attendance:
+
 ```json
 {
   "success": true,
@@ -533,7 +559,7 @@ Process QR code scan (public endpoint).
     "next_steps": {
       "endpoint": "/attendance/check_in",
       "method": "POST",
-      "required_data": {"event_id": 1},
+      "required_data": { "event_id": 1 },
       "requires_auth": true
     },
     "message": "Ready for check_in. Please authenticate if not already logged in."
@@ -542,6 +568,7 @@ Process QR code scan (public endpoint).
 ```
 
 **Response** (200 OK) - Membership Registration:
+
 ```json
 {
   "success": true,
@@ -559,7 +586,7 @@ Process QR code scan (public endpoint).
     "next_steps": {
       "endpoint": "/organization-member/join",
       "method": "POST",
-      "required_data": {"organization_id": 1},
+      "required_data": { "organization_id": 1 },
       "requires_auth": true
     },
     "message": "Ready to join organization. Please authenticate if not already logged in."
@@ -575,16 +602,18 @@ Process QR code scan (public endpoint).
 
 Upload a file (image, document, etc.).
 
-**Endpoint**: `POST /api/file/upload`  
-**Authentication**: Required  
-**Content-Type**: `multipart/form-data`  
+**Endpoint**: `POST /api/file/upload`
+**Authentication**: Required
+**Content-Type**: `multipart/form-data`
 **CSRF**: Required
 
 **Request Body** (Form Data):
+
 - `file`: File to upload
 - `file_type`: Type of file (`image`, `document`, `avatar`, `banner`)
 
 **Response** (200 OK):
+
 ```json
 {
   "success": true,
@@ -604,7 +633,7 @@ Upload a file (image, document, etc.).
 
 Access uploaded files.
 
-**Endpoint**: `GET /uploads/{filename}`  
+**Endpoint**: `GET /uploads/{filename}`
 **Authentication**: Optional (depends on file)
 
 **Response**: File content with appropriate headers
@@ -617,10 +646,11 @@ Access uploaded files.
 
 Get organization's current subscription status.
 
-**Endpoint**: `GET /api/org/subscription`  
+**Endpoint**: `GET /api/org/subscription`
 **Authentication**: Required (Admin)
 
 **Response** (200 OK):
+
 ```json
 {
   "success": true,
@@ -644,11 +674,12 @@ Get organization's current subscription status.
 
 Submit subscription renewal.
 
-**Endpoint**: `POST /api/org/subscription/renew`  
-**Authentication**: Required (Admin)  
+**Endpoint**: `POST /api/org/subscription/renew`
+**Authentication**: Required (Admin)
 **CSRF**: Required
 
 **Request Body**:
+
 ```json
 {
   "start_date": "2025-01-01",
@@ -659,6 +690,7 @@ Submit subscription renewal.
 ```
 
 **Response** (200 OK):
+
 ```json
 {
   "success": true,
@@ -685,10 +717,11 @@ Submit subscription renewal.
 
 Get system-wide subscription statistics.
 
-**Endpoint**: `GET /api/admin/subscriptions/stats`  
+**Endpoint**: `GET /api/admin/subscriptions/stats`
 **Authentication**: Required (Super Admin)
 
 **Response** (200 OK):
+
 ```json
 {
   "success": true,
@@ -718,11 +751,12 @@ Get system-wide subscription statistics.
 
 Approve a pending subscription.
 
-**Endpoint**: `POST /api/admin/subscriptions/{id}/verify`  
-**Authentication**: Required (Super Admin)  
+**Endpoint**: `POST /api/admin/subscriptions/{id}/verify`
+**Authentication**: Required (Super Admin)
 **CSRF**: Required
 
 **Request Body**:
+
 ```json
 {
   "notes": "Subscription approved after receipt verification"
@@ -730,6 +764,7 @@ Approve a pending subscription.
 ```
 
 **Response** (200 OK):
+
 ```json
 {
   "success": true,
@@ -745,10 +780,11 @@ Approve a pending subscription.
 
 Get CSRF token for secure forms.
 
-**Endpoint**: `GET /api/csrf-token`  
+**Endpoint**: `GET /api/csrf-token`
 **Authentication**: Not required
 
 **Response** (200 OK):
+
 ```json
 {
   "success": true,
@@ -777,16 +813,16 @@ All error responses follow this format:
 
 ### Common HTTP Status Codes
 
-| Code | Description | When It Occurs |
-|------|-------------|----------------|
-| 200 | OK | Successful request |
-| 201 | Created | Resource created successfully |
-| 400 | Bad Request | Invalid input data |
-| 401 | Unauthorized | Authentication required or failed |
-| 403 | Forbidden | Insufficient permissions |
-| 404 | Not Found | Resource doesn't exist |
-| 429 | Too Many Requests | Rate limit exceeded |
-| 500 | Internal Server Error | Server error |
+| Code | Description           | When It Occurs                    |
+| ---- | --------------------- | --------------------------------- |
+| 200  | OK                    | Successful request                |
+| 201  | Created               | Resource created successfully     |
+| 400  | Bad Request           | Invalid input data                |
+| 401  | Unauthorized          | Authentication required or failed |
+| 403  | Forbidden             | Insufficient permissions          |
+| 404  | Not Found             | Resource doesn't exist            |
+| 429  | Too Many Requests     | Rate limit exceeded               |
+| 500  | Internal Server Error | Server error                      |
 
 ### Rate Limit Response
 
@@ -824,26 +860,31 @@ When CSRF token is missing or invalid:
 ## Best Practices
 
 ### Authentication
+
 1. Always include the `Authorization` header with `Bearer <token>` for protected endpoints
 2. Handle token expiration gracefully and refresh when needed
 3. Properly logout users to blacklist tokens
 
 ### CSRF Protection
+
 1. Get CSRF token from `/api/csrf-token` endpoint
 2. Include token in `X-CSRF-Token` header or `_csrf_token` field
 3. CSRF is required for all POST, PUT, DELETE operations (except login/register)
 
 ### Rate Limiting
+
 1. Monitor rate limit headers in responses
 2. Implement exponential backoff when limits are hit
 3. Cache frequently accessed data to reduce API calls
 
 ### Error Handling
+
 1. Always check the `success` field in responses
 2. Display user-friendly error messages from the `message` field
 3. Handle field validation errors from the `details` object
 
 ### File Uploads
+
 1. Check file size limits (5MB default)
 2. Only upload allowed file types
 3. Handle upload progress for large files
@@ -863,6 +904,7 @@ A Postman collection is available with all endpoints pre-configured. Import the 
 ### cURL Examples
 
 #### Login
+
 ```bash
 curl -X POST http://localhost:8888/acetrack/api/auth/login \
   -H "Content-Type: application/json" \
@@ -870,12 +912,14 @@ curl -X POST http://localhost:8888/acetrack/api/auth/login \
 ```
 
 #### Get Events
+
 ```bash
 curl -X GET http://localhost:8888/acetrack/api/events \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
 ```
 
 #### Create Event
+
 ```bash
 curl -X POST http://localhost:8888/acetrack/api/events \
   -H "Authorization: Bearer YOUR_TOKEN_HERE" \
@@ -889,6 +933,7 @@ curl -X POST http://localhost:8888/acetrack/api/events \
 ## Changelog
 
 ### Version 1.0.0 (Current)
+
 - Initial API release
 - Authentication system with JWT
 - Organization management
@@ -905,6 +950,7 @@ curl -X POST http://localhost:8888/acetrack/api/events \
 ## Support
 
 For API support and questions:
+
 - Check this documentation first
 - Review error messages carefully
 - Ensure proper authentication and CSRF tokens
@@ -913,4 +959,4 @@ For API support and questions:
 
 ---
 
-*This documentation is automatically updated with each API version. Last updated: January 2024*
+_This documentation is automatically updated with each API version. Last updated: January 2024_

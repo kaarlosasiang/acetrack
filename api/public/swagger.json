@@ -40,12 +40,28 @@
           "id": { "type": "integer", "example": 1 },
           "first_name": { "type": "string", "example": "John" },
           "last_name": { "type": "string", "example": "Doe" },
-          "email": { "type": "string", "format": "email", "example": "john.doe@example.com" },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "john.doe@example.com"
+          },
           "phone_number": { "type": "string", "example": "+1234567890" },
           "course": { "type": "string", "example": "Computer Science" },
-          "year_level": { "type": "string", "enum": ["1st", "2nd", "3rd", "4th", "5th", "Graduate", "Alumni"], "example": "4th" },
-          "status": { "type": "string", "enum": ["active", "pending", "inactive"], "example": "active" },
-          "created_at": { "type": "string", "format": "date-time", "example": "2024-01-01T10:00:00Z" }
+          "year_level": {
+            "type": "string",
+            "enum": ["1st", "2nd", "3rd", "4th", "5th", "Graduate", "Alumni"],
+            "example": "4th"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["active", "pending", "inactive"],
+            "example": "active"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-01T10:00:00Z"
+          }
         }
       },
       "Organization": {
@@ -53,12 +69,23 @@
         "properties": {
           "id": { "type": "integer", "example": 1 },
           "name": { "type": "string", "example": "Tech Student Club" },
-          "description": { "type": "string", "example": "A club for technology enthusiasts" },
+          "description": {
+            "type": "string",
+            "example": "A club for technology enthusiasts"
+          },
           "logo_url": { "type": "string", "example": "/uploads/logo.png" },
           "banner_url": { "type": "string", "example": "/uploads/banner.jpg" },
           "member_count": { "type": "integer", "example": 150 },
-          "status": { "type": "string", "enum": ["active", "inactive"], "example": "active" },
-          "created_at": { "type": "string", "format": "date-time", "example": "2024-01-01T10:00:00Z" }
+          "status": {
+            "type": "string",
+            "enum": ["active", "inactive"],
+            "example": "active"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-01T10:00:00Z"
+          }
         }
       },
       "Event": {
@@ -66,17 +93,39 @@
         "properties": {
           "id": { "type": "integer", "example": 1 },
           "name": { "type": "string", "example": "Tech Workshop 2024" },
-          "description": { "type": "string", "example": "Annual technology workshop" },
-          "start_datetime": { "type": "string", "format": "date-time", "example": "2024-03-15T14:00:00Z" },
-          "end_datetime": { "type": "string", "format": "date-time", "example": "2024-03-15T18:00:00Z" },
+          "description": {
+            "type": "string",
+            "example": "Annual technology workshop"
+          },
+          "start_datetime": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-03-15T14:00:00Z"
+          },
+          "end_datetime": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-03-15T18:00:00Z"
+          },
           "location": { "type": "string", "example": "Main Auditorium" },
           "max_attendees": { "type": "integer", "example": 200 },
-          "status": { "type": "string", "enum": ["draft", "published", "cancelled"], "example": "published" },
-          "banner_url": { "type": "string", "example": "/uploads/event_banner.jpg" },
+          "status": {
+            "type": "string",
+            "enum": ["draft", "published", "cancelled"],
+            "example": "published"
+          },
+          "banner_url": {
+            "type": "string",
+            "example": "/uploads/event_banner.jpg"
+          },
           "qr_code_active": { "type": "boolean", "example": true },
           "registered_count": { "type": "integer", "example": 85 },
           "checked_in_count": { "type": "integer", "example": 45 },
-          "created_at": { "type": "string", "format": "date-time", "example": "2024-01-01T10:00:00Z" }
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-01T10:00:00Z"
+          }
         }
       },
       "Attendance": {
@@ -85,11 +134,27 @@
           "id": { "type": "integer", "example": 123 },
           "event_id": { "type": "integer", "example": 1 },
           "user_id": { "type": "integer", "example": 1 },
-          "check_in_time": { "type": "string", "format": "date-time", "example": "2024-03-15T14:15:00Z" },
-          "check_out_time": { "type": "string", "format": "date-time", "example": "2024-03-15T17:45:00Z" },
-          "status": { "type": "string", "enum": ["checked_in", "completed"], "example": "completed" },
+          "check_in_time": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-03-15T14:15:00Z"
+          },
+          "check_out_time": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-03-15T17:45:00Z"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["checked_in", "completed"],
+            "example": "completed"
+          },
           "duration": { "type": "string", "example": "3h 30m" },
-          "created_at": { "type": "string", "format": "date-time", "example": "2024-03-15T14:15:00Z" }
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-03-15T14:15:00Z"
+          }
         }
       },
       "Subscription": {
@@ -97,23 +162,57 @@
         "properties": {
           "id": { "type": "integer", "example": 1 },
           "organization_id": { "type": "integer", "example": 1 },
-          "start_date": { "type": "string", "format": "date", "example": "2024-01-01" },
-          "end_date": { "type": "string", "format": "date", "example": "2024-12-31" },
+          "start_date": {
+            "type": "string",
+            "format": "date",
+            "example": "2024-01-01"
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date",
+            "example": "2024-12-31"
+          },
           "amount": { "type": "number", "format": "float", "example": 299.99 },
-          "status": { "type": "string", "enum": ["active", "pending_verification", "expired", "rejected"], "example": "active" },
+          "status": {
+            "type": "string",
+            "enum": ["active", "pending_verification", "expired", "rejected"],
+            "example": "active"
+          },
           "receipt_reference": { "type": "string", "example": "TXN123456789" },
-          "verified_at": { "type": "string", "format": "date-time", "example": "2024-01-02T10:00:00Z" },
-          "created_at": { "type": "string", "format": "date-time", "example": "2024-01-01T10:00:00Z" }
+          "verified_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-02T10:00:00Z"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-01T10:00:00Z"
+          }
         }
       },
       "QRCode": {
         "type": "object",
         "properties": {
           "qr_token": { "type": "string", "example": "abc123def456..." },
-          "qr_url": { "type": "string", "example": "http://localhost:8888/acetrack/backend/public/scan/abc123def456..." },
-          "qr_code_image": { "type": "string", "example": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..." },
-          "expires_at": { "type": "string", "format": "date-time", "example": "2024-01-09T14:30:00Z" },
-          "type": { "type": "string", "enum": ["event_attendance", "membership_registration"], "example": "event_attendance" }
+          "qr_url": {
+            "type": "string",
+            "example": "http://localhost:8888/acetrack/backend/public/scan/abc123def456..."
+          },
+          "qr_code_image": {
+            "type": "string",
+            "example": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..."
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-09T14:30:00Z"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["event_attendance", "membership_registration"],
+            "example": "event_attendance"
+          }
         }
       },
       "ApiResponse": {
@@ -121,7 +220,10 @@
         "required": ["success"],
         "properties": {
           "success": { "type": "boolean", "example": true },
-          "message": { "type": "string", "example": "Operation completed successfully" },
+          "message": {
+            "type": "string",
+            "example": "Operation completed successfully"
+          },
           "data": { "type": "object" }
         }
       },
@@ -131,8 +233,11 @@
         "properties": {
           "success": { "type": "boolean", "example": false },
           "error": { "type": "string", "example": "validation_failed" },
-          "message": { "type": "string", "example": "The request data is invalid" },
-          "details": { 
+          "message": {
+            "type": "string",
+            "example": "The request data is invalid"
+          },
+          "details": {
             "type": "object",
             "additionalProperties": {
               "type": "array",
@@ -211,7 +316,10 @@
               "error": "validation_failed",
               "message": "The request data is invalid",
               "details": {
-                "email": ["The email field is required", "The email must be a valid email address"],
+                "email": [
+                  "The email field is required",
+                  "The email must be a valid email address"
+                ],
                 "password": ["The password must be at least 8 characters"]
               }
             }
@@ -233,8 +341,15 @@
                       "properties": {
                         "max_attempts": { "type": "integer", "example": 100 },
                         "attempts_used": { "type": "integer", "example": 100 },
-                        "attempts_remaining": { "type": "integer", "example": 0 },
-                        "reset_time": { "type": "string", "format": "date-time", "example": "2024-01-02T17:30:00Z" }
+                        "attempts_remaining": {
+                          "type": "integer",
+                          "example": 0
+                        },
+                        "reset_time": {
+                          "type": "string",
+                          "format": "date-time",
+                          "example": "2024-01-02T17:30:00Z"
+                        }
                       }
                     }
                   }
@@ -269,7 +384,12 @@
         "in": "query",
         "description": "Number of items per page",
         "required": false,
-        "schema": { "type": "integer", "minimum": 1, "maximum": 100, "default": 20 }
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 20
+        }
       },
       "SearchParam": {
         "name": "search",
@@ -349,16 +469,60 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["first_name", "last_name", "email", "password", "password_confirmation"],
+                "required": [
+                  "first_name",
+                  "last_name",
+                  "email",
+                  "password",
+                  "password_confirmation"
+                ],
                 "properties": {
-                  "first_name": { "type": "string", "maxLength": 100, "example": "John" },
-                  "last_name": { "type": "string", "maxLength": 100, "example": "Doe" },
-                  "email": { "type": "string", "format": "email", "example": "john.doe@example.com" },
-                  "password": { "type": "string", "minLength": 8, "example": "SecurePassword123" },
-                  "password_confirmation": { "type": "string", "example": "SecurePassword123" },
-                  "phone_number": { "type": "string", "example": "+1234567890" },
-                  "course": { "type": "string", "maxLength": 100, "example": "Computer Science" },
-                  "year_level": { "type": "string", "enum": ["1st", "2nd", "3rd", "4th", "5th", "Graduate", "Alumni"], "example": "4th" }
+                  "first_name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "John"
+                  },
+                  "last_name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "Doe"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "john.doe@example.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 8,
+                    "example": "SecurePassword123"
+                  },
+                  "password_confirmation": {
+                    "type": "string",
+                    "example": "SecurePassword123"
+                  },
+                  "phone_number": {
+                    "type": "string",
+                    "example": "+1234567890"
+                  },
+                  "course": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "Computer Science"
+                  },
+                  "year_level": {
+                    "type": "string",
+                    "enum": [
+                      "1st",
+                      "2nd",
+                      "3rd",
+                      "4th",
+                      "5th",
+                      "Graduate",
+                      "Alumni"
+                    ],
+                    "example": "4th"
+                  }
                 }
               }
             }
@@ -374,16 +538,16 @@
                 },
                 "example": {
                   "success": true,
-                  "message": "User registered successfully. Please check your email to verify your account.",
+                  "message": "User registered successfully. Account is now active.",
                   "data": {
                     "user": {
                       "id": 1,
                       "first_name": "John",
                       "last_name": "Doe",
                       "email": "john.doe@example.com",
-                      "status": "pending"
+                      "status": "active"
                     },
-                    "email_sent": true
+                    "email_sent": false
                   }
                 }
               }
@@ -408,8 +572,15 @@
                 "type": "object",
                 "required": ["email", "password"],
                 "properties": {
-                  "email": { "type": "string", "format": "email", "example": "john.doe@example.com" },
-                  "password": { "type": "string", "example": "SecurePassword123" }
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "john.doe@example.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "SecurePassword123"
+                  }
                 }
               }
             }
@@ -487,7 +658,11 @@
                 "type": "object",
                 "required": ["email"],
                 "properties": {
-                  "email": { "type": "string", "format": "email", "example": "john.doe@example.com" }
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "john.doe@example.com"
+                  }
                 }
               }
             }
@@ -527,9 +702,19 @@
                 "type": "object",
                 "required": ["token", "password", "password_confirmation"],
                 "properties": {
-                  "token": { "type": "string", "example": "password_reset_token_here" },
-                  "password": { "type": "string", "minLength": 8, "example": "NewSecurePassword123" },
-                  "password_confirmation": { "type": "string", "example": "NewSecurePassword123" }
+                  "token": {
+                    "type": "string",
+                    "example": "password_reset_token_here"
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 8,
+                    "example": "NewSecurePassword123"
+                  },
+                  "password_confirmation": {
+                    "type": "string",
+                    "example": "NewSecurePassword123"
+                  }
                 }
               }
             }
@@ -586,9 +771,7 @@
         "tags": ["Organization"],
         "summary": "Update organization",
         "description": "Update organization information (Admin only)",
-        "parameters": [
-          { "$ref": "#/components/parameters/CSRFHeader" }
-        ],
+        "parameters": [{ "$ref": "#/components/parameters/CSRFHeader" }],
         "requestBody": {
           "required": true,
           "content": {
@@ -596,8 +779,16 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "name": { "type": "string", "maxLength": 200, "example": "Updated Tech Student Club" },
-                  "description": { "type": "string", "maxLength": 1000, "example": "An updated description for the club" }
+                  "name": {
+                    "type": "string",
+                    "maxLength": 200,
+                    "example": "Updated Tech Student Club"
+                  },
+                  "description": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "example": "An updated description for the club"
+                  }
                 }
               }
             }
@@ -633,9 +824,7 @@
         "tags": ["Organization", "QR Codes"],
         "summary": "Generate membership QR code",
         "description": "Generate QR code for organization membership registration (Admin only)",
-        "parameters": [
-          { "$ref": "#/components/parameters/CSRFHeader" }
-        ],
+        "parameters": [{ "$ref": "#/components/parameters/CSRFHeader" }],
         "requestBody": {
           "required": false,
           "content": {
@@ -643,7 +832,13 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "expires_in_days": { "type": "integer", "minimum": 1, "maximum": 30, "default": 7, "example": 7 }
+                  "expires_in_days": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 30,
+                    "default": 7,
+                    "example": 7
+                  }
                 }
               }
             }
@@ -666,10 +861,22 @@
                             {
                               "type": "object",
                               "properties": {
-                                "organization_id": { "type": "integer", "example": 1 },
-                                "organization_name": { "type": "string", "example": "Tech Student Club" },
-                                "expires_in_days": { "type": "integer", "example": 7 },
-                                "instructions": { "type": "string", "example": "Share this QR code with potential members..." }
+                                "organization_id": {
+                                  "type": "integer",
+                                  "example": 1
+                                },
+                                "organization_name": {
+                                  "type": "string",
+                                  "example": "Tech Student Club"
+                                },
+                                "expires_in_days": {
+                                  "type": "integer",
+                                  "example": 7
+                                },
+                                "instructions": {
+                                  "type": "string",
+                                  "example": "Share this QR code with potential members..."
+                                }
                               }
                             }
                           ]
@@ -700,7 +907,10 @@
             "in": "query",
             "description": "Filter events by status",
             "required": false,
-            "schema": { "type": "string", "enum": ["draft", "published", "cancelled"] }
+            "schema": {
+              "type": "string",
+              "enum": ["draft", "published", "cancelled"]
+            }
           }
         ],
         "responses": {
@@ -721,7 +931,9 @@
                               "type": "array",
                               "items": { "$ref": "#/components/schemas/Event" }
                             },
-                            "pagination": { "$ref": "#/components/schemas/Pagination" }
+                            "pagination": {
+                              "$ref": "#/components/schemas/Pagination"
+                            }
                           }
                         }
                       }
@@ -738,24 +950,55 @@
         "tags": ["Events"],
         "summary": "Create event",
         "description": "Create a new event (Admin/Sub-Admin only)",
-        "parameters": [
-          { "$ref": "#/components/parameters/CSRFHeader" }
-        ],
+        "parameters": [{ "$ref": "#/components/parameters/CSRFHeader" }],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["name", "start_datetime", "end_datetime", "location"],
+                "required": [
+                  "name",
+                  "start_datetime",
+                  "end_datetime",
+                  "location"
+                ],
                 "properties": {
-                  "name": { "type": "string", "maxLength": 200, "example": "New Tech Meetup" },
-                  "description": { "type": "string", "example": "Monthly tech meetup for developers" },
-                  "start_datetime": { "type": "string", "format": "date-time", "example": "2024-04-20T15:00:00Z" },
-                  "end_datetime": { "type": "string", "format": "date-time", "example": "2024-04-20T19:00:00Z" },
-                  "location": { "type": "string", "maxLength": 255, "example": "Conference Room A" },
-                  "max_attendees": { "type": "integer", "minimum": 1, "example": 100 },
-                  "status": { "type": "string", "enum": ["draft", "published"], "default": "draft", "example": "draft" }
+                  "name": {
+                    "type": "string",
+                    "maxLength": 200,
+                    "example": "New Tech Meetup"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "Monthly tech meetup for developers"
+                  },
+                  "start_datetime": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2024-04-20T15:00:00Z"
+                  },
+                  "end_datetime": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2024-04-20T19:00:00Z"
+                  },
+                  "location": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "example": "Conference Room A"
+                  },
+                  "max_attendees": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 100
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": ["draft", "published"],
+                    "default": "draft",
+                    "example": "draft"
+                  }
                 }
               }
             }
@@ -819,8 +1062,15 @@
                               "type": "object",
                               "properties": {
                                 "event_id": { "type": "integer", "example": 1 },
-                                "event_name": { "type": "string", "example": "Tech Workshop 2024" },
-                                "event_datetime": { "type": "string", "format": "date-time", "example": "2024-03-15T14:00:00Z" }
+                                "event_name": {
+                                  "type": "string",
+                                  "example": "Tech Workshop 2024"
+                                },
+                                "event_datetime": {
+                                  "type": "string",
+                                  "format": "date-time",
+                                  "example": "2024-03-15T14:00:00Z"
+                                }
                               }
                             }
                           ]
@@ -843,9 +1093,7 @@
         "tags": ["Attendance"],
         "summary": "Check in to event",
         "description": "Check in to an event (authenticated users)",
-        "parameters": [
-          { "$ref": "#/components/parameters/CSRFHeader" }
-        ],
+        "parameters": [{ "$ref": "#/components/parameters/CSRFHeader" }],
         "requestBody": {
           "required": true,
           "content": {
@@ -855,7 +1103,11 @@
                 "required": ["event_id"],
                 "properties": {
                   "event_id": { "type": "integer", "example": 1 },
-                  "qr_token": { "type": "string", "description": "Optional QR token", "example": "optional_qr_token" }
+                  "qr_token": {
+                    "type": "string",
+                    "description": "Optional QR token",
+                    "example": "optional_qr_token"
+                  }
                 }
               }
             }
@@ -875,12 +1127,25 @@
                         "data": {
                           "type": "object",
                           "properties": {
-                            "attendance_id": { "type": "integer", "example": 123 },
+                            "attendance_id": {
+                              "type": "integer",
+                              "example": 123
+                            },
                             "event_id": { "type": "integer", "example": 1 },
                             "user_id": { "type": "integer", "example": 1 },
-                            "check_in_time": { "type": "string", "format": "date-time", "example": "2024-03-15T14:15:00Z" },
-                            "status": { "type": "string", "example": "checked_in" },
-                            "event_name": { "type": "string", "example": "Tech Workshop 2024" }
+                            "check_in_time": {
+                              "type": "string",
+                              "format": "date-time",
+                              "example": "2024-03-15T14:15:00Z"
+                            },
+                            "status": {
+                              "type": "string",
+                              "example": "checked_in"
+                            },
+                            "event_name": {
+                              "type": "string",
+                              "example": "Tech Workshop 2024"
+                            }
                           }
                         }
                       }
@@ -901,9 +1166,7 @@
         "tags": ["Attendance"],
         "summary": "Check out from event",
         "description": "Check out from an event (authenticated users)",
-        "parameters": [
-          { "$ref": "#/components/parameters/CSRFHeader" }
-        ],
+        "parameters": [{ "$ref": "#/components/parameters/CSRFHeader" }],
         "requestBody": {
           "required": true,
           "content": {
@@ -932,10 +1195,23 @@
                         "data": {
                           "type": "object",
                           "properties": {
-                            "attendance_id": { "type": "integer", "example": 123 },
-                            "check_out_time": { "type": "string", "format": "date-time", "example": "2024-03-15T17:45:00Z" },
-                            "total_duration": { "type": "string", "example": "3 hours 30 minutes" },
-                            "status": { "type": "string", "example": "completed" }
+                            "attendance_id": {
+                              "type": "integer",
+                              "example": 123
+                            },
+                            "check_out_time": {
+                              "type": "string",
+                              "format": "date-time",
+                              "example": "2024-03-15T17:45:00Z"
+                            },
+                            "total_duration": {
+                              "type": "string",
+                              "example": "3 hours 30 minutes"
+                            },
+                            "status": {
+                              "type": "string",
+                              "example": "completed"
+                            }
                           }
                         }
                       }
@@ -983,18 +1259,44 @@
                               "type": "object",
                               "description": "Event attendance QR scan result",
                               "properties": {
-                                "type": { "type": "string", "example": "event_attendance" },
-                                "status": { "type": "string", "example": "ready" },
-                                "action": { "type": "string", "example": "check_in" },
-                                "event": { "$ref": "#/components/schemas/Event" },
-                                "organization_id": { "type": "integer", "example": 1 },
+                                "type": {
+                                  "type": "string",
+                                  "example": "event_attendance"
+                                },
+                                "status": {
+                                  "type": "string",
+                                  "example": "ready"
+                                },
+                                "action": {
+                                  "type": "string",
+                                  "example": "check_in"
+                                },
+                                "event": {
+                                  "$ref": "#/components/schemas/Event"
+                                },
+                                "organization_id": {
+                                  "type": "integer",
+                                  "example": 1
+                                },
                                 "next_steps": {
                                   "type": "object",
                                   "properties": {
-                                    "endpoint": { "type": "string", "example": "/attendance/check_in" },
-                                    "method": { "type": "string", "example": "POST" },
-                                    "required_data": { "type": "object", "example": {"event_id": 1} },
-                                    "requires_auth": { "type": "boolean", "example": true }
+                                    "endpoint": {
+                                      "type": "string",
+                                      "example": "/attendance/check_in"
+                                    },
+                                    "method": {
+                                      "type": "string",
+                                      "example": "POST"
+                                    },
+                                    "required_data": {
+                                      "type": "object",
+                                      "example": { "event_id": 1 }
+                                    },
+                                    "requires_auth": {
+                                      "type": "boolean",
+                                      "example": true
+                                    }
                                   }
                                 }
                               }
@@ -1003,16 +1305,36 @@
                               "type": "object",
                               "description": "Membership registration QR scan result",
                               "properties": {
-                                "type": { "type": "string", "example": "membership_registration" },
-                                "status": { "type": "string", "example": "ready" },
-                                "organization": { "$ref": "#/components/schemas/Organization" },
+                                "type": {
+                                  "type": "string",
+                                  "example": "membership_registration"
+                                },
+                                "status": {
+                                  "type": "string",
+                                  "example": "ready"
+                                },
+                                "organization": {
+                                  "$ref": "#/components/schemas/Organization"
+                                },
                                 "next_steps": {
                                   "type": "object",
                                   "properties": {
-                                    "endpoint": { "type": "string", "example": "/organization-member/join" },
-                                    "method": { "type": "string", "example": "POST" },
-                                    "required_data": { "type": "object", "example": {"organization_id": 1} },
-                                    "requires_auth": { "type": "boolean", "example": true }
+                                    "endpoint": {
+                                      "type": "string",
+                                      "example": "/organization-member/join"
+                                    },
+                                    "method": {
+                                      "type": "string",
+                                      "example": "POST"
+                                    },
+                                    "required_data": {
+                                      "type": "object",
+                                      "example": { "organization_id": 1 }
+                                    },
+                                    "requires_auth": {
+                                      "type": "boolean",
+                                      "example": true
+                                    }
                                   }
                                 }
                               }
@@ -1050,7 +1372,7 @@
                         "data": {
                           "type": "object",
                           "properties": {
-                            "current_subscription": { 
+                            "current_subscription": {
                               "oneOf": [
                                 { "$ref": "#/components/schemas/Subscription" },
                                 { "type": "null" }
@@ -1058,7 +1380,10 @@
                             },
                             "is_active": { "type": "boolean", "example": true },
                             "status": { "type": "string", "example": "active" },
-                            "days_until_expiry": { "type": "integer", "example": 300 }
+                            "days_until_expiry": {
+                              "type": "integer",
+                              "example": 300
+                            }
                           }
                         }
                       }
@@ -1078,9 +1403,7 @@
         "tags": ["Subscriptions"],
         "summary": "Renew subscription",
         "description": "Submit subscription renewal (Admin only)",
-        "parameters": [
-          { "$ref": "#/components/parameters/CSRFHeader" }
-        ],
+        "parameters": [{ "$ref": "#/components/parameters/CSRFHeader" }],
         "requestBody": {
           "required": true,
           "content": {
@@ -1089,11 +1412,32 @@
                 "type": "object",
                 "required": ["start_date", "end_date", "amount"],
                 "properties": {
-                  "start_date": { "type": "string", "format": "date", "example": "2025-01-01" },
-                  "end_date": { "type": "string", "format": "date", "example": "2025-12-31" },
-                  "amount": { "type": "number", "format": "float", "minimum": 0, "example": 299.99 },
-                  "receipt_reference": { "type": "string", "maxLength": 255, "example": "TXN123456789" },
-                  "receipt_image_url": { "type": "string", "maxLength": 255, "example": "/uploads/receipt.jpg" }
+                  "start_date": {
+                    "type": "string",
+                    "format": "date",
+                    "example": "2025-01-01"
+                  },
+                  "end_date": {
+                    "type": "string",
+                    "format": "date",
+                    "example": "2025-12-31"
+                  },
+                  "amount": {
+                    "type": "number",
+                    "format": "float",
+                    "minimum": 0,
+                    "example": 299.99
+                  },
+                  "receipt_reference": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "example": "TXN123456789"
+                  },
+                  "receipt_image_url": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "example": "/uploads/receipt.jpg"
+                  }
                 }
               }
             }
@@ -1113,9 +1457,17 @@
                         "data": {
                           "type": "object",
                           "properties": {
-                            "subscription": { "$ref": "#/components/schemas/Subscription" },
-                            "status": { "type": "string", "example": "pending_verification" },
-                            "message": { "type": "string", "example": "Subscription created and pending verification by system administrators." }
+                            "subscription": {
+                              "$ref": "#/components/schemas/Subscription"
+                            },
+                            "status": {
+                              "type": "string",
+                              "example": "pending_verification"
+                            },
+                            "message": {
+                              "type": "string",
+                              "example": "Subscription created and pending verification by system administrators."
+                            }
                           }
                         }
                       }
