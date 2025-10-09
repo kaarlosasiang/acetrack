@@ -59,7 +59,7 @@ class AuthController extends BaseController
             // $emailResult = $emailHelper->sendVerificationEmail(
             //     $user['email'],
             //     $user['first_name'] . ' ' . $user['last_name'],
-            //     $user['verification_token']
+            //     $user['email_verification_token']  // Fixed: matches database schema
             // );
 
             // if (!$emailResult['success']) {
@@ -133,7 +133,7 @@ class AuthController extends BaseController
 
             // Remove sensitive data
             unset($user['password_hash']);
-            unset($user['verification_token']);
+            unset($user['email_verification_token']);  // Fixed: matches database schema
             unset($user['password_reset_token']);
 
             // Add organization data to user
@@ -210,10 +210,17 @@ class AuthController extends BaseController
             $userModel = new User();
             $user = $userModel->find($payload->user_id);
 
-            if (!$user || $user['status'] !== 'active') {
+            // Email verification disabled - allow refresh for all users
+            if (!$user) {
                 $this->clearRefreshTokenCookie();
                 $this->error('Invalid refresh token', 401);
             }
+
+            // Status check removed - email verification disabled
+            // if (!$user || $user['status'] !== 'active') {
+            //     $this->clearRefreshTokenCookie();
+            //     $this->error('Invalid refresh token', 401);
+            // }
 
             // Generate new access token
             $accessToken = JWT::createUserToken($user);
@@ -404,7 +411,7 @@ class AuthController extends BaseController
 
             // Generate new verification token
             $newToken = bin2hex(random_bytes(32));
-            $updated = $userModel->update($user['id'], ['verification_token' => $newToken]);
+            $updated = $userModel->update($user['id'], ['email_verification_token' => $newToken]);
 
             if (!$updated) {
                 $this->error('Failed to generate new verification token');

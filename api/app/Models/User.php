@@ -17,7 +17,7 @@ class User extends BaseModel
         'is_super_admin',
         'status',
         'email_verified_at',
-        'verification_token',
+        'email_verification_token',  // Fixed: matches database schema
         'password_reset_token',
         'password_reset_expires_at',
         'last_login_at'
@@ -36,7 +36,7 @@ class User extends BaseModel
     public function findByVerificationToken($token)
     {
         return $this->db->queryOne(
-            "SELECT * FROM {$this->table} WHERE verification_token = ? AND deleted_at IS NULL",
+            "SELECT * FROM {$this->table} WHERE email_verification_token = ? AND deleted_at IS NULL",
             [$token]
         );
     }
@@ -62,7 +62,7 @@ class User extends BaseModel
 
         // Email verification disabled - no need to generate verification token
         // Generate verification token
-        // $data['verification_token'] = bin2hex(random_bytes(32));
+        // $data['email_verification_token'] = bin2hex(random_bytes(32));
 
         return $this->create($data);
     }
@@ -104,7 +104,7 @@ class User extends BaseModel
     {
         return $this->update($userId, [
             'email_verified_at' => date('Y-m-d H:i:s'),
-            'verification_token' => null,
+            'email_verification_token' => null,  // Fixed: matches database schema
             'status' => 'active'
         ]);
     }
@@ -211,7 +211,7 @@ class User extends BaseModel
 
         // Remove sensitive data
         unset($user['password_hash']);
-        unset($user['verification_token']);
+        unset($user['email_verification_token']);  // Fixed: matches database schema
         unset($user['password_reset_token']);
 
         // Add organization-specific data if tenant context is provided
