@@ -1,3 +1,0 @@
-[2025-10-04 17:33:53] [ERROR] SMTP Email Failed Context: {"to":"sasiang64@gmail.com","error":"STARTTLS failed: 250-SIZE 35882577\r\n","smtp_host":"smtp.gmail.com"}
-[2025-10-04 17:34:26] [ERROR] SMTP Email Failed Context: {"to":"sasiang64@gmail.com","error":"STARTTLS failed: 250-SIZE 35882577\r\n","smtp_host":"smtp.gmail.com"}
-[2025-10-04 17:41:04] [ERROR] SMTP Email Failed Context: {"to":"sasiang64@gmail.com","error":"SMTP Connection failed: Operation timed out (60)","smtp_host":"smtp.gmail.com"}

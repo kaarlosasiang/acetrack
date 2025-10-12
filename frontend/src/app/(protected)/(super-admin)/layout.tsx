@@ -5,7 +5,7 @@ import { useAuthGuard } from "@/lib/hooks/useAuthGuard";
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 
-import { AppSidebar } from "@/components/layouts/(super-admin)/app-sidebar";
+import { AppSidebar } from "@/components/common/app-sidebar/app-sidebar";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -20,6 +20,15 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import {
+  BarChart3,
+  Building2,
+  Calendar,
+  CreditCard,
+  LayoutDashboard,
+  Settings,
+  Users,
+} from "lucide-react";
 
 export default function SuperAdminLayout({
   children,
@@ -29,6 +38,102 @@ export default function SuperAdminLayout({
   const { isLoading } = useAuthGuard();
   const { user, isAuthenticated } = useAuth();
   const router = useRouter();
+
+  const sidebarData = {
+    user: user
+      ? {
+          name: `${user.first_name} ${user.last_name}`,
+          email: user.email,
+          avatar: user.profile_image_url || "https://github.com/shadcn.png", // fallback to app icon
+        }
+      : {
+          name: "Loading...",
+          email: "",
+          avatar: "/images/acetrack-icon.png",
+        },
+    navMain: [
+      {
+        title: "Dashboard",
+        url: "/dashboard",
+        icon: LayoutDashboard,
+        isActive: true,
+      },
+      {
+        title: "Organizations",
+        url: "/organizations",
+        icon: Building2,
+        items: [
+          { title: "All Organizations", url: "/organizations/all" },
+          {
+            title: "Pending Approval",
+            url: "/organizations/pending",
+          },
+          {
+            title: "Active Organizations",
+            url: "/organizations/active",
+          },
+          { title: "Suspended", url: "/organizations/suspended" },
+        ],
+      },
+      {
+        title: "Users",
+        url: "/users",
+        icon: Users,
+        items: [
+          { title: "All Users", url: "/users" },
+          { title: "Organization Admins", url: "/users/admins" },
+          { title: "Recent Registrations", url: "/users/recent" },
+        ],
+      },
+      {
+        title: "Subscriptions",
+        url: "/subscriptions",
+        icon: CreditCard,
+        items: [
+          {
+            title: "Active Subscriptions",
+            url: "/subscriptions/active",
+          },
+          {
+            title: "Pending Verification",
+            url: "/subscriptions/pending",
+          },
+          {
+            title: "Revenue Analytics",
+            url: "/subscriptions/analytics",
+          },
+        ],
+      },
+      {
+        title: "Events",
+        url: "/super-admin/events",
+        icon: Calendar,
+        items: [
+          { title: "All Events", url: "/super-admin/events" },
+          { title: "Event Analytics", url: "/super-admin/events/analytics" },
+        ],
+      },
+      {
+        title: "Analytics",
+        url: "/super-admin/analytics",
+        icon: BarChart3,
+        items: [
+          { title: "System Overview", url: "/super-admin/analytics/overview" },
+          { title: "Usage Statistics", url: "/super-admin/analytics/usage" },
+          { title: "Revenue Reports", url: "/super-admin/analytics/revenue" },
+        ],
+      },
+      {
+        title: "Settings",
+        url: "/super-admin/settings",
+        icon: Settings,
+        items: [
+          { title: "Platform Settings", url: "/super-admin/settings/platform" },
+          { title: "Subscription Plans", url: "/super-admin/settings/plans" },
+        ],
+      },
+    ],
+  };
 
   // Check if user has super admin privileges
   useEffect(() => {
@@ -70,7 +175,7 @@ export default function SuperAdminLayout({
 
   return (
     <SidebarProvider>
-      <AppSidebar />
+      <AppSidebar data={sidebarData} />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2">
           <div className="flex items-center gap-2 px-4">
