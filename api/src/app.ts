@@ -84,6 +84,37 @@ const appFactory = {
       });
     });
 
+    // CSRF token endpoint (root-level for frontend compatibility)
+    app.get('/csrf-token', (req: Request, res: Response) => {
+      const crypto = require('crypto');
+      const csrfToken = crypto.randomBytes(32).toString('hex');
+
+      res.status(200).json({
+        success: true,
+        csrf_token: csrfToken,
+        message: 'CSRF token generated successfully',
+      });
+    });
+
+    // API base route - show available endpoints
+    app.get(`${config.server.apiPrefix}/${config.server.apiVersion}`, (req: Request, res: Response) => {
+      res.status(200).json({
+        success: true,
+        message: 'AceTrack API',
+        data: {
+          version: config.server.apiVersion,
+          endpoints: {
+            auth: `${config.server.apiPrefix}/${config.server.apiVersion}/auth`,
+            events: `${config.server.apiPrefix}/${config.server.apiVersion}/events`,
+            organizations: `${config.server.apiPrefix}/${config.server.apiVersion}/organizations`,
+            organizationMembers: `${config.server.apiPrefix}/${config.server.apiVersion}/organization-members`,
+            subscriptions: `${config.server.apiPrefix}/${config.server.apiVersion}/subscriptions`,
+          },
+          documentation: 'See API documentation for detailed endpoint information',
+        },
+      });
+    });
+
     // API routes
     app.use(`${config.server.apiPrefix}/${config.server.apiVersion}/auth`, authRoutes);
     app.use(`${config.server.apiPrefix}/${config.server.apiVersion}/events`, eventRoutes);

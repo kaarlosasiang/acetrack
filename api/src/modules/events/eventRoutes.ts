@@ -28,7 +28,7 @@ const organizationParamsSchema = z.object({
 
 // Public routes (no authentication required)
 /**
- * @route   GET /api/events/public
+ * @route   GET /api/v1/events/public
  * @desc    Get public events (published events only)
  * @access  Public
  */
@@ -38,35 +38,35 @@ router.get('/public', validateQuery(eventQuerySchema), eventController.getPublic
 router.use(authMiddleware); // All routes below require authentication
 
 /**
- * @route   POST /api/events
+ * @route   POST /api/v1/events
  * @desc    Create a new event
  * @access  Private (org_admin, admin)
  */
 router.post('/', validateBody(createEventSchema), eventController.createEvent);
 
 /**
- * @route   GET /api/events
+ * @route   GET /api/v1/events
  * @desc    Get events with pagination and filtering
  * @access  Private (member, org_admin, admin)
  */
 router.get('/', validateQuery(eventQuerySchema), eventController.getEvents);
 
 /**
- * @route   GET /api/events/stats
+ * @route   GET /api/v1/events/stats
  * @desc    Get event statistics
  * @access  Private (org_admin, admin)
  */
 router.get('/stats', eventController.getEventStats);
 
 /**
- * @route   POST /api/events/restore
+ * @route   POST /api/v1/events/restore
  * @desc    Restore deleted event
  * @access  Private (admin only)
  */
 router.post('/restore', validateBody(restoreEventSchema), eventController.restoreEvent);
 
 /**
- * @route   GET /api/events/upcoming/:organizationId
+ * @route   GET /api/v1/events/upcoming/:organizationId
  * @desc    Get upcoming events for an organization
  * @access  Private (member, org_admin, admin)
  */
@@ -77,14 +77,14 @@ router.get(
 );
 
 /**
- * @route   GET /api/events/:id
+ * @route   GET /api/v1/events/:id
  * @desc    Get event by ID
  * @access  Private (member, org_admin, admin)
  */
 router.get('/:id', validateParams(eventParamsSchema), eventController.getEventById);
 
 /**
- * @route   PUT /api/events/:id
+ * @route   PUT /api/v1/events/:id
  * @desc    Update event
  * @access  Private (org_admin, admin, creator)
  */
@@ -96,14 +96,14 @@ router.put(
 );
 
 /**
- * @route   PATCH /api/events/:id/status
+ * @route   PATCH /api/v1/events/:id/status
  * @desc    Update event status
  * @access  Private (org_admin, admin)
  */
 router.patch('/:id/status', validateParams(eventParamsSchema), eventController.updateEventStatus);
 
 /**
- * @route   DELETE /api/events/:id
+ * @route   DELETE /api/v1/events/:id
  * @desc    Delete event (soft delete by default, permanent if ?permanently=true)
  * @access  Private (org_admin, admin, creator)
  */
@@ -115,7 +115,7 @@ router.delete(
 );
 
 /**
- * @route   GET /api/organizations/:organizationId/events
+ * @route   GET /api/v1/events/organizations/:organizationId/events
  * @desc    Get events for a specific organization
  * @access  Private (member, org_admin, admin)
  */

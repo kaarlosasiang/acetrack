@@ -21,6 +21,11 @@ const organizationParamsSchema = z.object({
 });
 
 // Public routes (no authentication required)
+/**
+ * @route   GET /api/v1/organizations/public
+ * @desc    Get public organizations
+ * @access  Public
+ */
 router.get(
   '/public',
   validateQuery(organizationQuerySchema),
@@ -31,19 +36,44 @@ router.get(
 router.use(authMiddleware); // All routes below require authentication
 
 // User organization routes
+/**
+ * @route   GET /api/v1/organizations/my-organizations
+ * @desc    Get organizations where current user is a member
+ * @access  Private
+ */
 router.get('/my-organizations', organizationController.getUserOrganizations);
 
 // Organization CRUD routes
+/**
+ * @route   POST /api/v1/organizations
+ * @desc    Create a new organization
+ * @access  Private (admin, org_admin)
+ */
 router.post('/', validateBody(createOrganizationSchema), organizationController.createOrganization);
 
+/**
+ * @route   GET /api/v1/organizations
+ * @desc    Get all organizations with pagination
+ * @access  Private
+ */
 router.get('/', validateQuery(organizationQuerySchema), organizationController.getOrganizations);
 
+/**
+ * @route   GET /api/v1/organizations/:id
+ * @desc    Get organization by ID
+ * @access  Private
+ */
 router.get(
   '/:id',
   validateParams(organizationParamsSchema),
   organizationController.getOrganizationById
 );
 
+/**
+ * @route   PUT /api/v1/organizations/:id
+ * @desc    Update organization
+ * @access  Private (admin, org_admin)
+ */
 router.put(
   '/:id',
   validateParams(organizationParamsSchema),
@@ -51,6 +81,11 @@ router.put(
   organizationController.updateOrganization
 );
 
+/**
+ * @route   DELETE /api/v1/organizations/:id
+ * @desc    Delete organization (soft delete)
+ * @access  Private (admin only)
+ */
 router.delete(
   '/:id',
   validateParams(organizationParamsSchema),

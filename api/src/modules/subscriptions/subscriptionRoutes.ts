@@ -24,35 +24,35 @@ const organizationParamsSchema = z.object({
 router.use(authMiddleware); // All routes below require authentication
 
 /**
- * @route   POST /api/subscriptions
+ * @route   POST /api/v1/subscriptions
  * @desc    Create a new subscription
  * @access  Private (org_admin, admin)
  */
 router.post('/', validateBody(createSubscriptionSchema), subscriptionController.createSubscription);
 
 /**
- * @route   GET /api/subscriptions
+ * @route   GET /api/v1/subscriptions
  * @desc    Get subscriptions with pagination and filtering
  * @access  Private (org_admin, admin)
  */
 router.get('/', subscriptionController.getSubscriptions);
 
 /**
- * @route   GET /api/subscriptions/stats
+ * @route   GET /api/v1/subscriptions/stats
  * @desc    Get subscription statistics
  * @access  Private (admin only)
  */
 router.get('/stats', subscriptionController.getSubscriptionStats);
 
 /**
- * @route   GET /api/subscriptions/expiring
+ * @route   GET /api/v1/subscriptions/expiring
  * @desc    Get expiring subscriptions
  * @access  Private (admin only)
  */
 router.get('/expiring', subscriptionController.getExpiringSubscriptions);
 
 /**
- * @route   GET /api/subscriptions/:id
+ * @route   GET /api/v1/subscriptions/:id
  * @desc    Get subscription by ID
  * @access  Private (org_admin, admin)
  */
@@ -63,7 +63,7 @@ router.get(
 );
 
 /**
- * @route   PUT /api/subscriptions/:id
+ * @route   PUT /api/v1/subscriptions/:id
  * @desc    Update subscription
  * @access  Private (org_admin, admin)
  */
@@ -75,7 +75,7 @@ router.put(
 );
 
 /**
- * @route   POST /api/subscriptions/:id/verify
+ * @route   POST /api/v1/subscriptions/:id/verify
  * @desc    Verify subscription (approve/reject)
  * @access  Private (admin only)
  */
@@ -87,7 +87,7 @@ router.post(
 );
 
 /**
- * @route   DELETE /api/subscriptions/:id
+ * @route   DELETE /api/v1/subscriptions/:id
  * @desc    Cancel subscription
  * @access  Private (org_admin, admin)
  */
@@ -98,7 +98,7 @@ router.delete(
 );
 
 /**
- * @route   GET /api/organizations/:organizationId/subscription
+ * @route   GET /api/v1/subscriptions/organizations/:organizationId/subscription
  * @desc    Get organization's current subscription
  * @access  Private (org_admin, admin)
  */

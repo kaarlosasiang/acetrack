@@ -18,7 +18,7 @@ class CSRFManager {
 
     try {
       // Fetch new CSRF token from your backend
-      const response = await axios.get(`${APPConfig.API_URL}/api/csrf-token`, {
+      const response = await axios.get(`${APPConfig.API_URL}/auth/csrf-token`, {
         withCredentials: true,
         headers: {
           "Content-Type": "application/json",
@@ -162,7 +162,7 @@ const createAPIService = (url = "") => {
       if (
         error?.response?.status === 401 &&
         !originalRequest._retry &&
-        !originalRequest.url?.includes("/api/auth/refresh")
+        !originalRequest.url?.includes("/auth/refresh-token")
       ) {
         originalRequest._retry = true;
 
@@ -170,7 +170,7 @@ const createAPIService = (url = "") => {
           // Attempt to refresh the access token using HTTPOnly cookie
           // No need to send refresh token - it's handled via cookie
           const { data } = await axios.post(
-            `${baseURL}/api/auth/refresh`,
+            `${baseURL}/auth/refresh-token`,
             {}, // Empty body - refresh token comes from cookie
             {
               withCredentials: true,

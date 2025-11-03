@@ -1,4 +1,5 @@
 import logger from '@/shared/utils/logger';
+import crypto from 'crypto';
 import { NextFunction, Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import authService from './authService';
@@ -241,6 +242,27 @@ const authController = {
       });
     } catch (error) {
       logger.error('Get profile error:', error);
+      next(error);
+    }
+  },
+
+  /**
+   * Get CSRF token
+   */
+  getCsrfToken: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      // Generate a CSRF token
+      const csrfToken = crypto.randomBytes(32).toString('hex');
+
+      // Store the token in session or return it directly
+      // For now, we'll return it directly (stateless approach)
+      res.status(200).json({
+        success: true,
+        csrf_token: csrfToken,
+        message: 'CSRF token generated successfully',
+      });
+    } catch (error) {
+      logger.error('CSRF token generation error:', error);
       next(error);
     }
   },

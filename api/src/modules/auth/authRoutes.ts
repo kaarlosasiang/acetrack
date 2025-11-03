@@ -55,15 +55,68 @@ const verifyEmailValidation = [
 ];
 
 // Public routes
+/**
+ * @route   GET /api/v1/auth/csrf-token
+ * @desc    Get CSRF token
+ * @access  Public
+ */
+router.get('/csrf-token', authController.getCsrfToken);
+
+/**
+ * @route   POST /api/v1/auth/register
+ * @desc    Register a new user
+ * @access  Public
+ */
 router.post('/register', registerValidation, authController.register);
+
+/**
+ * @route   POST /api/v1/auth/login
+ * @desc    Login user
+ * @access  Public
+ */
 router.post('/login', loginValidation, authController.login);
+
+/**
+ * @route   POST /api/v1/auth/refresh-token
+ * @desc    Refresh access token
+ * @access  Public
+ */
 router.post('/refresh-token', authController.refreshToken);
+
+/**
+ * @route   POST /api/v1/auth/logout
+ * @desc    Logout user
+ * @access  Public
+ */
 router.post('/logout', authController.logout);
+
+/**
+ * @route   POST /api/v1/auth/forgot-password
+ * @desc    Send password reset email
+ * @access  Public
+ */
 router.post('/forgot-password', forgotPasswordValidation, authController.forgotPassword);
+
+/**
+ * @route   POST /api/v1/auth/reset-password/:token
+ * @desc    Reset password with token
+ * @access  Public
+ */
 router.post('/reset-password/:token', resetPasswordValidation, authController.resetPassword);
+
+/**
+ * @route   GET /api/v1/auth/verify-email/:token
+ * @desc    Verify email with token
+ * @access  Public
+ */
 router.get('/verify-email/:token', verifyEmailValidation, authController.verifyEmail);
 
 // Protected routes
+/**
+ * @route   GET /api/v1/auth/profile
+ * @desc    Get current user profile
+ * @access  Private
+ */
 router.get('/profile', authMiddleware, authController.getProfile);
 
 export default router;
